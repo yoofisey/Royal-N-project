@@ -136,12 +136,27 @@ export default function App() {
   const [view, setView] = useState('guest'); 
   const [booking, setBooking] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
+  const [loginError, setLoginError] = useState(false);
+  
   const [availability, setAvailability] = useState({ 
     standard: true, deluxe: true, executive: true, hall: true, grounds: true 
   });
 
   const [dates, setDates] = useState({ start: '', end: '' });
   const [numNights, setNumNights] = useState(1);
+
+  // --- LOGIN HANDLER ---
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (adminPassword === 'admin123') { // Change this to your desired password
+      setView('admin');
+      setLoginError(false);
+      setAdminPassword("");
+    } else {
+      setLoginError(true);
+    }
+  };
 
   useEffect(() => {
     const fetchAvail = () => {
@@ -157,7 +172,6 @@ export default function App() {
       const s = new Date(dates.start);
       const e = new Date(dates.end);
       const diff = Math.ceil((e - s) / (1000 * 60 * 60 * 24));
-      // If dates are invalid (e.g. user tricks system), default to 1
       setNumNights(diff > 0 ? diff : 1);
     } else {
       setNumNights(1);
@@ -195,7 +209,33 @@ export default function App() {
     }
   };
 
+  // --- VIEW ROUTING ---
   if (view === 'admin') return <AdminDashboard setView={setView} />;
+
+  if (view === 'login') {
+    return (
+      <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f4f4f4' }}>
+        <form onSubmit={handleLogin} style={{ background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px', textAlign: 'center' }}>
+          <img src="/images/logo2.jpeg" alt="Logo" style={{ height: '60px', marginBottom: '20px' }} />
+          <h2 style={{ marginBottom: '20px', color: '#333' }}>Staff Portal</h2>
+          <input 
+            type="password" 
+            placeholder="Enter Admin Password" 
+            value={adminPassword}
+            onChange={(e) => setAdminPassword(e.target.value)}
+            style={{ width: '100%', padding: '12px', marginBottom: '10px', border: loginError ? '2px solid #e74c3c' : '1px solid #ddd', borderRadius: '5px' }}
+          />
+          {loginError && <p style={{ color: '#e74c3c', fontSize: '0.8rem', marginBottom: '10px' }}>Invalid Password</p>}
+          <button type="submit" style={{ width: '100%', padding: '12px', background: '#c19d68', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
+            Login
+          </button>
+          <button type="button" onClick={() => setView('guest')} style={{ marginTop: '15px', background: 'none', border: 'none', color: '#666', cursor: 'pointer', textDecoration: 'underline' }}>
+            Return to Homepage
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="main-wrapper">
@@ -208,11 +248,6 @@ export default function App() {
           <ul className="nav-links" style={{ display: 'flex', gap: '20px', listStyle: 'none', alignItems: 'center' }}>
             <li><a href="#rooms" style={{textDecoration: 'none', color: 'inherit'}}>Rooms</a></li>
             <li><a href="#events" style={{textDecoration: 'none', color: 'inherit'}}>Events</a></li>
-            <li>
-              <button onClick={() => setView('admin')} style={{ background: '#c19d68', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
-                Admin Panel
-              </button>
-            </li>
           </ul>
         </div>
       </nav>
@@ -274,7 +309,13 @@ export default function App() {
       <footer className="main-footer" style={{ background: '#1a1a1a', color: 'white', padding: '60px 0 20px 0', marginTop: '60px' }}>
         <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px' }}>
           <div>
-            <img src="/images/logo2.jpeg" alt="Logo" style={{ height: '60px', borderRadius: '5px' }} />
+            {/* CLICKING THIS LOGO OPENS LOGIN */}
+            <img 
+              src="/images/logo2.jpeg" 
+              alt="Logo" 
+              onClick={() => setView('login')}
+              style={{ height: '60px', borderRadius: '5px', cursor: 'pointer' }} 
+            />
             <h3 style={{ margin: '10px 0', color: '#c19d68' }}>ROYAL 'N' HOTEL</h3>
             <p style={{ color: '#aaa', fontSize: '0.9rem' }}>World-Class Hospitality since 2026.</p>
           </div>
@@ -315,12 +356,10 @@ export default function App() {
                 <div style={{display: 'flex', gap: '10px'}}>
                   <div style={{flex: 1}}>
                     <label style={{fontSize: '0.75rem', color: '#666'}}>Check-In</label>
-                    {/* Minimum date set to today */}
                     <input name="startDate" type="date" required min={new Date().toISOString().split("T")[0]} value={dates.start} onChange={(e) => setDates({...dates, start: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }} />
                   </div>
                   <div style={{flex: 1}}>
                     <label style={{fontSize: '0.75rem', color: '#666'}}>Check-Out</label>
-                    {/* Minimum date restricted to the day after start date */}
                     <input name="endDate" type="date" required disabled={!dates.start} min={dates.start} value={dates.end} onChange={(e) => setDates({...dates, end: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }} />
                   </div>
                 </div>
