@@ -1,22 +1,43 @@
 import express from 'express';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
+import fs from 'fs'; // Added to save data to a file
 
 const app = express();
-app.use(cors());
+
+// 1. UPDATED CORS: Allow your local dev and your future live site
+app.use(cors({
+  origin: '*' // For the audition, this is easiest. 
+}));
+
 app.use(express.json());
 
-// 1. UPDATED: Added 'hall' and 'grounds' to the inventory
+// 2. DYNAMIC PORT: Critical for hosting
+const PORT = process.env.PORT || 5000;
+
+// 3. PERSISTENT DATA: Load existing bookings from a file if it exists
 let bookings = [];
+const DATA_FILE = './bookings.json';
+
+if (fs.existsSync(DATA_FILE)) {
+  const fileData = fs.readFileSync(DATA_FILE);
+  bookings = JSON.parse(fileData);
+}
+
+// Helper to save bookings
+const saveBookings = () => {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(bookings, null, 2));
+};
+
 let roomAvailability = {
   standard: true,
   deluxe: true,
   executive: true,
-  hall: true,    // Added for Event Center
-  grounds: true  // Added for Event Center
+  hall: true,
+  grounds: true
 };
 
-// 2. Email Configuration
+// --- EMAIL CONFIGURATION ---
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   host: 'smtp.gmail.com',
@@ -28,19 +49,18 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// 3. GET: Fetch all bookings
+// --- ROUTES ---
+
 app.get('/api/bookings', (req, res) => {
   res.json(bookings);
 });
 
-// 4. GET: Fetch availability
 app.get('/api/availability', (req, res) => {
   res.json(roomAvailability);
 });
 
-// 5. POST: Create a new booking
 app.post('/api/book', (req, res) => {
-  const { guestName, email, roomType,price, date } = req.body;
+  const { guestName, email, roomType, price, startDate, endDate } = req.body;
   
   const newBooking = { 
     id: Date.now(), 
@@ -48,18 +68,20 @@ app.post('/api/book', (req, res) => {
     email, 
     roomType, 
     price: Number(price),
-    date, 
+    startDate, // Fixed: frontend uses startDate/endDate
+    endDate,
     status: 'Pending',
     paid: false        
   };
   
   bookings.push(newBooking);
+  saveBookings(); // Save to file
 
   const mailOptions = {
     from: '"Royal N Hotel" <seyyoofi95@gmail.com>',
     to: email,
     subject: 'Reservation Received - Royal N Hotel',
-    text: `Hello ${guestName},\n\nWe have received your request for the ${roomType} on ${date}. Our team will contact you shortly to confirm.\n\nThank you for choosing Royal N Hotel!`
+    text: `Hello ${guestName},\n\nWe have received your request for the ${roomType} from ${startDate} to ${endDate}. Our team will contact you shortly to confirm.\n\nThank you for choosing Royal N Hotel!`
   };
 
   transporter.sendMail(mailOptions, (error) => {
@@ -69,43 +91,36 @@ app.post('/api/book', (req, res) => {
   res.status(200).json({ message: "Booking received!", booking: newBooking });
 });
 
-// 6. PATCH: Update availability (The Toggle Fix)
 app.patch('/api/availability', (req, res) => {
   const { roomType, status } = req.body;
-  
-  // Logic check: if the key exists in our object, update it
   if (roomAvailability.hasOwnProperty(roomType)) {
     roomAvailability[roomType] = status; 
-    console.log(`✅ Update Success: ${roomType} is now ${status ? 'OPEN' : 'FULL'}`);
     res.json(roomAvailability);
   } else {
-    console.log(`❌ Update Failed: ${roomType} is not a valid category.`);
     res.status(400).json({ error: "Invalid category" });
   }
 });
 
-// 7. PATCH: Update specific booking
 app.patch('/api/bookings/:id', (req, res) => {
   const { id } = req.params;
   const updates = req.body;
-
-  bookings = bookings.map(b => 
-    b.id == id ? { ...b, ...updates } : b
-  );
-
+  bookings = bookings.map(b => b.id == id ? { ...b, ...updates } : b);
+  saveBookings(); // Save to file
   res.json({ message: "Booking updated" });
 });
 
-// 8. DELETE: Remove a booking
 app.delete('/api/bookings/:id', (req, res) => {
   const { id } = req.params;
   bookings = bookings.filter(b => b.id != id);
+  saveBookings(); // Save to file
   res.json({ message: "Booking deleted" });
 });
 
-app.listen(5000, () => {
-    console.log("------------------------------------------");
-    console.log("🚀 Server running on http://localhost:5000");
-    console.log("📦 Tracking: standard, deluxe, executive, hall, grounds");
-    console.log("------------------------------------------");
+// Root route for Render to check if server is alive
+app.get('/', (req, res) => {
+  res.send("Royal N Hotel Server is Live!");
+});
+
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
 });
