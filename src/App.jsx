@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import './index.css';
 
+// --- API CONFIGURATION ---
+// This line automatically uses your Render URL on the web, and localhost while you are coding.
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 // --- DATA CONFIGURATION ---
 const roomsData = [
   { id: 1, key: 'standard', name: 'The Essential Stay', price: 450, package: 'Perfect for the solo traveler. Includes High-Speed Fiber WiFi, Gourmet Breakfast for 1, and 24/7 Concierge access.', img: '/images/standard.jpg' },
@@ -21,8 +25,9 @@ function AdminDashboard({ setView }) {
   });
 
   const fetchData = () => {
-    fetch('http://localhost:5000/api/bookings').then(res => res.json()).then(setAdminBookings).catch(() => {});
-    fetch('http://localhost:5000/api/availability').then(res => res.json()).then(setAvailability).catch(() => {});
+    // UPDATED: Used ${API_URL}
+    fetch(`${API_URL}/api/bookings`).then(res => res.json()).then(setAdminBookings).catch(() => {});
+    fetch(`${API_URL}/api/availability`).then(res => res.json()).then(setAvailability).catch(() => {});
   };
 
   useEffect(() => {
@@ -33,7 +38,8 @@ function AdminDashboard({ setView }) {
 
   const updateBooking = (id, updates) => {
     setAdminBookings(prev => prev.map(b => b.id == id ? { ...b, ...updates } : b));
-    fetch(`http://localhost:5000/api/bookings/${id}`, {
+    // UPDATED: Used ${API_URL}
+    fetch(`${API_URL}/api/bookings/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
@@ -43,7 +49,8 @@ function AdminDashboard({ setView }) {
   const toggleStatus = (key) => {
     const newStatus = !availability[key];
     setAvailability(prev => ({ ...prev, [key]: newStatus }));
-    fetch('http://localhost:5000/api/availability', {
+    // UPDATED: Used ${API_URL}
+    fetch(`${API_URL}/api/availability`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ roomType: key, status: newStatus })
@@ -146,10 +153,9 @@ export default function App() {
   const [dates, setDates] = useState({ start: '', end: '' });
   const [numNights, setNumNights] = useState(1);
 
-  // --- LOGIN HANDLER ---
   const handleLogin = (e) => {
     e.preventDefault();
-    if (adminPassword === 'admin123') { // Change this to your desired password
+    if (adminPassword === 'admin123') {
       setView('admin');
       setLoginError(false);
       setAdminPassword("");
@@ -160,7 +166,8 @@ export default function App() {
 
   useEffect(() => {
     const fetchAvail = () => {
-      fetch('http://localhost:5000/api/availability').then(res => res.json()).then(setAvailability).catch(() => {});
+      // UPDATED: Used ${API_URL}
+      fetch(`${API_URL}/api/availability`).then(res => res.json()).then(setAvailability).catch(() => {});
     };
     fetchAvail();
     const interval = setInterval(fetchAvail, 5000); 
@@ -193,7 +200,8 @@ export default function App() {
     };
 
     try {
-      await fetch('http://localhost:5000/api/book', {
+      // UPDATED: Used ${API_URL}
+      await fetch(`${API_URL}/api/book`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -209,7 +217,6 @@ export default function App() {
     }
   };
 
-  // --- VIEW ROUTING ---
   if (view === 'admin') return <AdminDashboard setView={setView} />;
 
   if (view === 'login') {
@@ -309,7 +316,6 @@ export default function App() {
       <footer className="main-footer" style={{ background: '#1a1a1a', color: 'white', padding: '60px 0 20px 0', marginTop: '60px' }}>
         <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px' }}>
           <div>
-            {/* CLICKING THIS LOGO OPENS LOGIN */}
             <img 
               src="/images/logo2.jpeg" 
               alt="Logo" 
