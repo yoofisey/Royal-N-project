@@ -1,31 +1,35 @@
 import express from 'express';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
-import fs from 'fs'; // Added to save data to a file
+import fs from 'fs';
 import process from 'process';
 
 const app = express();
 
-// 1. UPDATED CORS: Allow your local dev and your future live site
+// 1. CORS: Keeping it open for easy connection between your Render frontend and backend
 app.use(cors({
-  origin: '*' // For the audition, this is easiest. 
+  origin: '*' 
 }));
 
 app.use(express.json());
 
-// 2. DYNAMIC PORT: Critical for hosting
+// 2. DYNAMIC PORT: Critical for Render
 const PORT = process.env.PORT || 5000;
 
-// 3. PERSISTENT DATA: Load existing bookings from a file if it exists
+// 3. PERSISTENT DATA
 let bookings = [];
 const DATA_FILE = './bookings.json';
 
 if (fs.existsSync(DATA_FILE)) {
-  const fileData = fs.readFileSync(DATA_FILE);
-  bookings = JSON.parse(fileData);
+  try {
+    const fileData = fs.readFileSync(DATA_FILE);
+    bookings = JSON.parse(fileData);
+  } catch (err) {
+    console.error("Error reading bookings file:", err);
+    bookings = [];
+  }
 }
 
-// Helper to save bookings
 const saveBookings = () => {
   fs.writeFileSync(DATA_FILE, JSON.stringify(bookings, null, 2));
 };
@@ -41,12 +45,9 @@ let roomAvailability = {
 // --- EMAIL CONFIGURATION ---
 const transporter = nodemailer.createTransport({
   service: 'gmail',
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
   auth: {
     user: 'seyyoofi95@gmail.com', 
-    pass: 'xxjzetykokkltblj' 
+    pass: 'xxjzetykokkltblj' // Ensure this is a 16-character App Password
   }
 });
 
@@ -61,22 +62,28 @@ app.get('/api/availability', (req, res) => {
 });
 
 app.post('/api/book', (req, res) => {
+  console.log("New booking request received:", req.body); // LOG FOR DEBUGGING
+  
   const { guestName, email, roomType, price, startDate, endDate } = req.body;
   
+  if (!guestName || !email) {
+    return res.status(400).json({ error: "Missing guest name or email" });
+  }
+
   const newBooking = { 
     id: Date.now(), 
     guestName, 
     email, 
     roomType, 
     price: Number(price),
-    startDate, // Fixed: frontend uses startDate/endDate
+    startDate, 
     endDate,
     status: 'Pending',
     paid: false        
   };
   
   bookings.push(newBooking);
-  saveBookings(); // Save to file
+  saveBookings();
 
   const mailOptions = {
     from: '"Royal N Hotel" <seyyoofi95@gmail.com>',
@@ -85,8 +92,12 @@ app.post('/api/book', (req, res) => {
     text: `Hello ${guestName},\n\nWe have received your request for the ${roomType} from ${startDate} to ${endDate}. Our team will contact you shortly to confirm.\n\nThank you for choosing Royal N Hotel!`
   };
 
-  transporter.sendMail(mailOptions, (error) => {
-    if (error) console.log("Email error:", error);
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log("Email error:", error);
+    } else {
+      console.log("Email sent successfully:", info.response);
+    }
   });
 
   res.status(200).json({ message: "Booking received!", booking: newBooking });
@@ -94,7 +105,7 @@ app.post('/api/book', (req, res) => {
 
 app.patch('/api/availability', (req, res) => {
   const { roomType, status } = req.body;
-  if (Object.prototype.hasOwnProperty.call(roomAvailability, roomType)) {
+  if (roomAvailability.hasOwnProperty(roomType)) {
     roomAvailability[roomType] = status; 
     res.json(roomAvailability);
   } else {
@@ -106,22 +117,22 @@ app.patch('/api/bookings/:id', (req, res) => {
   const { id } = req.params;
   const updates = req.body;
   bookings = bookings.map(b => b.id == id ? { ...b, ...updates } : b);
-  saveBookings(); // Save to file
+  saveBookings();
   res.json({ message: "Booking updated" });
 });
 
 app.delete('/api/bookings/:id', (req, res) => {
   const { id } = req.params;
   bookings = bookings.filter(b => b.id != id);
-  saveBookings(); // Save to file
+  saveBookings();
   res.json({ message: "Booking deleted" });
 });
 
-// Root route for Render to check if server is alive
 app.get('/', (req, res) => {
   res.send("Royal N Hotel Server is Live!");
 });
 
-app.listen(PORT, () => {
+// Bind to 0.0.0.0 so Render can direct traffic to the app
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
