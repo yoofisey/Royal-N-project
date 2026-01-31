@@ -8,10 +8,10 @@ const app = express();
 
 // 1. CORS: Keeping it open for easy connection between your Render frontend and backend
 app.use(cors({
-  origin: '*' 
+  origin: true, // Reflects the origin of the request
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
-
-app.use(express.json());
 
 // 2. DYNAMIC PORT: Critical for Render
 const PORT = process.env.PORT || 5000;
