@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
 import fs from 'fs'; // Added to save data to a file
+import process from 'process';
 
 const app = express();
 
@@ -93,7 +94,7 @@ app.post('/api/book', (req, res) => {
 
 app.patch('/api/availability', (req, res) => {
   const { roomType, status } = req.body;
-  if (roomAvailability.hasOwnProperty(roomType)) {
+  if (Object.prototype.hasOwnProperty.call(roomAvailability, roomType)) {
     roomAvailability[roomType] = status; 
     res.json(roomAvailability);
   } else {
