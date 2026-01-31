@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import './index.css';
 
 // --- API CONFIGURATION ---
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "https://royal-n-api-1.onrender.com/";
 
 // --- DATA CONFIGURATION ---
 // I removed "hotel-site/" from all paths. Images should be in /public/images/
