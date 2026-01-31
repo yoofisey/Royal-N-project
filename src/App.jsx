@@ -7,14 +7,14 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 // --- DATA CONFIGURATION ---
 const roomsData = [
-  { id: 1, key: 'standard', name: 'The Essential Stay', price: 450, package: 'Perfect for the solo traveler. Includes High-Speed Fiber WiFi, Gourmet Breakfast for 1, and 24/7 Concierge access.', img: 'images/standard.jpg' },
-  { id: 2, key: 'deluxe', name: 'The Royal Experience', price: 550, package: 'Elevate your visit. Includes All-Day Pool & Gym access, Buffet Breakfast for 1, and a complimentary Welcome Drink on arrival.', img: 'images/deluxe.jpg' },
-  { id: 3, key: 'executive', name: 'The Executive Retreat', price: 650, package: 'Luxury without compromise. Includes Full Buffet Breakfast for 2, Private Balcony, Gym & Pool access, and Late Check-out privileges.', img: 'images/executive.jpg' },
+  { id: 1, key: 'standard', name: 'The Essential Stay', price: 450, package: 'Perfect for the solo traveler. Includes High-Speed Fiber WiFi, Gourmet Breakfast for 1, and 24/7 Concierge access.', img: 'hotel-site/images/standard.jpg' },
+  { id: 2, key: 'deluxe', name: 'The Royal Experience', price: 550, package: 'Elevate your visit. Includes All-Day Pool & Gym access, Buffet Breakfast for 1, and a complimentary Welcome Drink on arrival.', img: 'hotel-site/images/deluxe.jpg' },
+  { id: 3, key: 'executive', name: 'The Executive Retreat', price: 650, package: 'Luxury without compromise. Includes Full Buffet Breakfast for 2, Private Balcony, Gym & Pool access, and Late Check-out privileges.', img: 'hotel-site/images/executive.jpg' },
 ];
 
 const eventsData = [
-  { id: 4, key: 'hall', name: 'Corporate Summit Hall', price: 3000, package: 'Professional setting with 50 Chairs, 2 Presenter Tables, High-End Audio/Visual gear, and dedicated photography space.', img: 'images/hall.jpg' },
-  { id: 5, key: 'grounds', name: 'The Grand Grounds', price: 4500, package: 'Our premier outdoor space. Perfect for Weddings or Proposals. Includes bespoke setup, photography access, and evening lighting.', img: 'images/grounds.jpg' },
+  { id: 4, key: 'hall', name: 'Corporate Summit Hall', price: 3000, package: 'Professional setting with 50 Chairs, 2 Presenter Tables, High-End Audio/Visual gear, and dedicated photography space.', img: 'hotel-site/images/hall.jpg' },
+  { id: 5, key: 'grounds', name: 'The Grand Grounds', price: 4500, package: 'Our premier outdoor space. Perfect for Weddings or Proposals. Includes bespoke setup, photography access, and evening lighting.', img: 'hotel-site/images/grounds.jpg' },
 ];
 
 // --- ADMIN DASHBOARD COMPONENT ---
@@ -61,7 +61,7 @@ function AdminDashboard({ setView }) {
     <div className="admin-container" style={{ padding: '20px', background: '#fff', minHeight: '100vh' }}>
       <nav className="admin-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src="/images/logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
+          <img src="hotel-site/images/logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
           <h2 style={{ margin: 0 }}>ROYAL 'N' PANEL</h2>
         </div>
         <button onClick={() => setView('guest')} className="btn-book" style={{ background: '#333', color: 'white', padding: '10px 20px', borderRadius: '5px', border: 'none', cursor: 'pointer' }}>
@@ -249,7 +249,7 @@ export default function App() {
       <nav className="navbar">
         <div className="container nav-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 0' }}>
           <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img src="/images/logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
+            <img src="hotel-site/images/logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
             <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>ROYAL 'N' HOTEL</span>
           </div>
           <ul className="nav-links" style={{ display: 'flex', gap: '20px', listStyle: 'none', alignItems: 'center' }}>
