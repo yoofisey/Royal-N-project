@@ -7,7 +7,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "https://royal-n-hotel.onrender.com",
+  methods: ["GET", "POST"],
+  credentials: true
+}));
 app.use(express.json());
 
 /* =======================
@@ -94,8 +98,10 @@ app.get('/api/availability', async (_, res) => {
 });
 
 // Create booking
-app.post('/api/book', async (req, res) => {
+app.post("/api/book", async (req, res) => {
   try {
+    console.log("📦 Booking payload:", req.body);
+
     const booking = new Booking(req.body);
     await booking.save();
 
