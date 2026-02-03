@@ -1,99 +1,101 @@
 import express from 'express';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
-import fs from 'fs';
-import process from 'process';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 
+dotenv.config();
 const app = express();
 
-// 1. CORS: Wide open for the frontend connection
-app.use(cors(
-  {
-  origin: '*',
-  methods: ['GET', 'POST', 'PATCH', 'DELETE'],  
-  allowedHeaders: ['Content-Type'],
-  }
-));
+app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 5000;
-const DATA_FILE = './bookings.json';
+// --- MONGODB CONNECTION ---
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://royal-n-hotel:<royal-n12345>@cluster0.yrf5zzx.mongodb.net/?appName=Cluster0";
 
-// 3. PERSISTENT DATA
-let bookings = [];
-if (fs.existsSync(DATA_FILE)) {
-    try {
-        bookings = JSON.parse(fs.readFileSync(DATA_FILE));
-    } catch {
-        bookings = [];
-    }
-}
+mongoose.connect(MONGO_URI)
+    .then(() => console.log("✅ Connected to MongoDB"))
+    .catch(err => console.error("❌ MongoDB connection error:", err));
 
-const saveBookings = () => {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(bookings, null, 2));
-};
+// --- DATA SCHEMAS ---
+const BookingSchema = new mongoose.Schema({
+    guestName: String,
+    email: String,
+    roomType: String,
+    price: Number,
+    startDate: String,
+    endDate: String,
+    status: { type: String, default: 'Pending' },
+    paid: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now }
+});
 
-let roomAvailability = { standard: true, deluxe: true, executive: true, hall: true, grounds: true };
+const AvailSchema = new mongoose.Schema({
+    roomType: { type: String, unique: true },
+    status: Boolean
+});
 
-// --- EMAIL CONFIGURATION ---
+const Booking = mongoose.model('Booking', BookingSchema);
+const Availability = mongoose.model('Availability', AvailSchema);
+
+// --- EMAIL CONFIG ---
 const transporter = nodemailer.createTransport({
     service: 'gmail',
-    auth: {
-        user: 'seyyoofi95@gmail.com', 
-        pass: 'xxjzetykokkltblj' 
-    }
+    auth: { user: 'seyyoofi95@gmail.com', pass: 'xxjzetykokkltblj' }
 });
 
 // --- ROUTES ---
-app.get('/api/bookings', (req, res) => res.json(bookings));
-app.get('/api/availability', (req, res) => res.json(roomAvailability));
 
-app.post('/api/book', (req, res) => {
-    const { guestName, email, roomType, price, startDate, endDate } = req.body;
-    
-    const newBooking = { 
-        id: Date.now(), 
-        guestName, 
-        email, 
-        roomType, 
-        price: Number(price),
-        startDate, 
-        endDate,
-        status: 'Pending',
-        paid: false                
-    };
-    
-    bookings.push(newBooking);
-    saveBookings();
-
-    // Nodemailer with error catching so it doesn't block the API response
-    const mailOptions = {
-        from: '"Royal N Hotel" <seyyoofi95@gmail.com>',
-        to: email,
-        subject: 'Reservation Received - Royal N Hotel',
-        text: `Hello ${guestName},\n\nWe have received your request for the ${roomType}. Our team will contact you shortly.`
-    };
-
-    transporter.sendMail(mailOptions)
-        .then(info => console.log("Email sent:", info.response))
-        .catch(err => console.error("Email failed (booking still saved):", err));
-
-    res.status(200).json({ message: "Booking received!", booking: newBooking });
+// Get all bookings
+app.get('/api/bookings', async (req, res) => {
+    const bookings = await Booking.find().sort({ createdAt: -1 });
+    res.json(bookings);
 });
 
-app.patch('/api/availability', (req, res) => {
+// Get availability
+app.get('/api/availability', async (req, res) => {
+    const avail = await Availability.find();
+    // Convert array to the object format the frontend expects
+    const formatted = avail.reduce((acc, curr) => ({ ...acc, [curr.roomType]: curr.status }), {});
+    res.json(formatted);
+});
+
+// Create a booking
+app.post('/api/book', async (req, res) => {
+    try {
+        const newBooking = new Booking(req.body);
+        await newBooking.save();
+
+        const mailOptions = {
+            from: '"Royal N Hotel" <seyyoofi95@gmail.com>',
+            to: req.body.email,
+            subject: 'Reservation Received - Royal N Hotel',
+            html: `<h3>Hello ${req.body.guestName},</h3><p>Booking for ${req.body.roomType} received!</p>`
+        };
+        transporter.sendMail(mailOptions);
+
+        res.status(201).json(newBooking);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Update availability
+app.patch('/api/availability', async (req, res) => {
     const { roomType, status } = req.body;
-    roomAvailability[roomType] = status; 
-    res.json(roomAvailability);
+    await Availability.findOneAndUpdate(
+        { roomType }, 
+        { status }, 
+        { upsert: true, new: true }
+    );
+    res.json({ message: "Status Updated" });
 });
 
-app.patch('/api/bookings/:id', (req, res) => {
-    const { id } = req.params;
-    bookings = bookings.map(b => b.id == id ? { ...b, ...req.body } : b);
-    saveBookings();
-    res.json({ message: "Updated" });
+// Update booking (Admin)
+app.patch('/api/bookings/:id', async (req, res) => {
+    await Booking.findByIdAndUpdate(req.params.id, req.body);
+    res.json({ message: "Booking Updated" });
 });
 
-app.get('/', (req, res) => res.send("Royal N Hotel Server is Live!"));
-
-app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server on ${PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server running on port ${PORT}`));

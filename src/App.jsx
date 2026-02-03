@@ -57,7 +57,7 @@ function AdminDashboard({ setView }) {
     <div className="admin-container" style={{ padding: '20px', background: '#fff', minHeight: '100vh' }}>
       <nav className="admin-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src="logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
+          <img src="/logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
           <h2 style={{ margin: 0 }}>ROYAL 'N' PANEL</h2>
         </div>
         <button onClick={() => setView('guest')} className="btn-book" style={{ background: '#333', color: 'white', padding: '10px 20px', borderRadius: '5px', border: 'none', cursor: 'pointer' }}>
@@ -149,15 +149,23 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    const fetchAvail = () => {
-      fetch(`${API_URL}/api/availability`).then(res => res.json()).then(setAvailability).catch(() => {});
-    };
-    fetchAvail();
-    const interval = setInterval(fetchAvail, 5000); 
-    return () => clearInterval(interval);
-  }, [view]);
-
+ useEffect(() => {
+  const fetchAvail = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/availability`);
+      if (!res.ok) {
+        // This stops the "Uncaught Object" error by handling the bad response
+        console.warn(`Server responded with status: ${res.status}`);
+        return;
+      }
+      const data = await res.json();
+      setAvailability(data);
+    } catch (err) {
+      console.error("Connection to backend failed. Is the server awake?");
+    }
+  };
+  fetchAvail();
+}, []);
   useEffect(() => {
     if (dates.start && dates.end) {
       const s = new Date(dates.start);
@@ -201,7 +209,7 @@ export default function App() {
     return (
       <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f4f4f4' }}>
         <form onSubmit={handleLogin} style={{ background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', width: '320px', textAlign: 'center' }}>
-          <img src="logo2.jpeg" alt="Logo" style={{ height: '60px', marginBottom: '20px' }} />
+          <img src="/logo2.jpeg" alt="Logo" style={{ height: '60px', marginBottom: '20px' }} />
           <h3>Staff Portal</h3>
           <input type="password" placeholder="Password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '10px', border: loginError ? '2px solid red' : '1px solid #ddd' }} />
           <button type="submit" className="btn-book" style={{ width: '100%', background: '#c19d68', color: 'white', border: 'none', padding: '12px', cursor: 'pointer' }}>Login</button>
@@ -216,7 +224,7 @@ export default function App() {
       <nav className="navbar">
         <div className="container nav-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 0' }}>
           <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img src="logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
+            <img src="/logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
             <span style={{ fontWeight: 'bold' }}>ROYAL 'N' HOTEL</span>
           </div>
           <ul className="nav-links" style={{ display: 'flex', gap: '20px', listStyle: 'none' }}>
@@ -226,7 +234,7 @@ export default function App() {
         </div>
       </nav>
 
-      <header className="hero-section" style={{ height: '60vh', background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("hero.jpg") center/cover', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textAlign: 'center' }}>
+      <header className="hero-section" style={{ height: '60vh', background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("/hero.jpg") center/cover', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textAlign: 'center' }}>
         <div className="hero-content">
           <h1 style={{ fontSize: '3rem' }}>Experience Timeless Elegance</h1>
           <p>Luxury redefined in the heart of the city.</p>
@@ -278,7 +286,7 @@ export default function App() {
       <footer className="main-footer" style={{ background: '#1a1a1a', color: '#fff', padding: '60px 0 20px', marginTop: '40px' }}>
         <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px' }}>
           <div>
-            <img src="logo2.jpeg" alt="Logo" onClick={() => setView('login')} style={{ height: '60px', borderRadius: '5px', cursor: 'pointer', marginBottom: '15px' }} />
+            <img src="/logo2.jpeg" alt="Logo" onClick={() => setView('login')} style={{ height: '60px', borderRadius: '5px', cursor: 'pointer', marginBottom: '15px' }} />
             <h3 style={{ color: '#c19d68' }}>ROYAL 'N' HOTEL</h3>
             <p style={{ color: '#aaa', fontSize: '0.9rem' }}>World-Class Hospitality since 2026.</p>
           </div>
