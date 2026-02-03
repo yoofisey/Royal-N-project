@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './index.css';
-import AdminDashboard from './adminDashboard'; // moved admin panel here
+import AdminDashboard from './components/adminDashboard'; // moved admin panel here
 
 // --- API CONFIGURATION ---
 const API_URL = import.meta.env.VITE_API_URL || "https://royal-n-api-1.onrender.com";
