@@ -2,24 +2,21 @@ import { useState, useEffect } from 'react';
 import './index.css';
 
 // --- API CONFIGURATION ---
-const BASE_URL = import.meta.env.VITE_API_URL || "https://royal-n-api-1.onrender.com";
-const API_URL = BASE_URL.replace(/\/$/, ""); 
+const API_URL = import.meta.env.VITE_API_URL || "https://royal-n-api-1.onrender.com";
 
 // --- DATA CONFIGURATION ---
 const roomsData = [
-  { id: 1, key: 'standard', name: 'The Essential Stay', price: 450, package: 'Perfect for the solo traveler. Includes Fiber WiFi and Gourmet Breakfast.', img: 'images/standard.jpg' },
-  { id: 2, key: 'deluxe', name: 'The Royal Experience', price: 550, package: 'Includes Pool/Gym access and a complimentary Welcome Drink.', img: 'images/deluxe.jpg' },
-  { id: 3, key: 'executive', name: 'The Executive Retreat', price: 650, package: 'Full Buffet, Private Balcony, and Late Check-out privileges.', img: 'images/executive.jpg' },
+  { id: 1, key: 'standard', name: 'The Essential Stay', price: 450, package: 'Perfect for the solo traveler. Includes High-Speed Fiber WiFi, Gourmet Breakfast for 1, and 24/7 Concierge access.', img: 'images/standard.jpg' },
+  { id: 2, key: 'deluxe', name: 'The Royal Experience', price: 550, package: 'Elevate your visit. Includes All-Day Pool & Gym access, Buffet Breakfast for 1, and a complimentary Welcome Drink on arrival.', img: 'images/deluxe.jpg' },
+  { id: 3, key: 'executive', name: 'The Executive Retreat', price: 650, package: 'Luxury without compromise. Includes Full Buffet Breakfast for 2, Private Balcony, Gym & Pool access, and Late Check-out privileges.', img: 'images/executive.jpg' },
 ];
 
 const eventsData = [
-  { id: 4, key: 'hall', name: 'Corporate Summit Hall', price: 3000, package: 'Professional setting with A/V gear and photography space.', img: 'images/hall.jpg' },
-  { id: 5, key: 'grounds', name: 'The Grand Grounds', price: 4500, package: 'Premier outdoor space perfect for Weddings or Proposals.', img: 'images/grounds.jpg' },
+  { id: 4, key: 'hall', name: 'Corporate Summit Hall', price: 3000, package: 'Professional setting with 50 Chairs, 2 Presenter Tables, High-End Audio/Visual gear, and dedicated photography space.', img: 'images/hall.jpg' },
+  { id: 5, key: 'grounds', name: 'The Grand Grounds', price: 4500, package: 'Our premier outdoor space. Perfect for Weddings or Proposals. Includes bespoke setup, photography access, and evening lighting.', img: 'images/grounds.jpg' },
 ];
 
-// Combine all for easy lookup in modal
-const allAccommodations = [...roomsData, ...eventsData];
-
+// --- ADMIN DASHBOARD COMPONENT ---
 function AdminDashboard({ setView }) {
   const [adminBookings, setAdminBookings] = useState([]);
   const [availability, setAvailability] = useState({ 
@@ -27,8 +24,8 @@ function AdminDashboard({ setView }) {
   });
 
   const fetchData = () => {
-    fetch(`${API_URL}/api/bookings`).then(res => res.json()).then(setAdminBookings).catch(e => console.error("Fetch Error:", e));
-    fetch(`${API_URL}/api/availability`).then(res => res.json()).then(setAvailability).catch(e => console.error("Avail Error:", e));
+    fetch(`${API_URL}/api/bookings`).then(res => res.json()).then(setAdminBookings).catch(() => {});
+    fetch(`${API_URL}/api/availability`).then(res => res.json()).then(setAvailability).catch(() => {});
   };
 
   useEffect(() => {
@@ -38,7 +35,7 @@ function AdminDashboard({ setView }) {
   }, []);
 
   const updateBooking = (id, updates) => {
-    setAdminBookings(prev => prev.map(b => b.id == id ? { ...b, ...updates } : b));
+    setAdminBookings(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
     fetch(`${API_URL}/api/bookings/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -58,65 +55,108 @@ function AdminDashboard({ setView }) {
 
   return (
     <div className="admin-container" style={{ padding: '20px', background: '#fff', minHeight: '100vh' }}>
-      <nav className="admin-nav" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
-        <h2>ROYAL 'N' PANEL</h2>
-        <button onClick={() => setView('guest')} className="btn-book">Logout</button>
+      <nav className="admin-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src="images/logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
+          <h2 style={{ margin: 0 }}>ROYAL 'N' PANEL</h2>
+        </div>
+        <button onClick={() => setView('guest')} className="btn-book" style={{ background: '#333', color: 'white', padding: '10px 20px', borderRadius: '5px', border: 'none', cursor: 'pointer' }}>
+          Logout to Site
+        </button>
       </nav>
-      <div className="stats-row" style={{display: 'flex', gap: '20px', margin: '20px 0'}}>
-        <div className="stat-card">
-           <h3>GH₵ {adminBookings.filter(b => b.paid).reduce((sum, b) => sum + (Number(b.price) || 0), 0).toLocaleString()}</h3>
-           <p>Revenue</p>
+
+      <div className="admin-content">
+        <div className="stats-row" style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
+          <div className="stat-card" style={{ flex: 1, padding: '20px', border: '1px solid #eee', borderRadius: '10px' }}>
+            <h3 style={{ fontSize: '1.5rem', margin: '0 0 10px 0' }}>GH₵ {adminBookings.filter(b => b.paid).reduce((sum, b) => sum + (Number(b.price) || 0), 0).toLocaleString()}</h3>
+            <p style={{ color: '#666', margin: 0 }}>Total Paid Revenue</p>
+          </div>
+          <div className="stat-card" style={{ flex: 1, padding: '20px', border: '1px solid #eee', borderRadius: '10px' }}>
+            <h3 style={{ fontSize: '1.5rem', margin: '0 0 10px 0' }}>{adminBookings.length}</h3>
+            <p style={{ color: '#666', margin: 0 }}>Total Reservations</p>
+          </div>
         </div>
-        <div className="stat-card">
-           <h3>{adminBookings.length}</h3>
-           <p>Bookings</p>
+
+        <h3>Inventory Control</h3>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '30px' }}>
+          {Object.keys(availability).map(key => (
+            <button key={key} onClick={() => toggleStatus(key)} style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', background: availability[key] ? '#d4edda' : '#f8d7da', cursor: 'pointer', textTransform: 'capitalize' }}>
+              {key}: {availability[key] ? '✅ Open' : '❌ Full'}
+            </button>
+          ))}
         </div>
-      </div>
-      <div style={{overflowX: 'auto'}}>
-        <table className="admin-table" style={{width: '100%', textAlign: 'left'}}>
-          <thead>
-            <tr><th>Guest</th><th>Dates</th><th>Status</th><th>Payment</th></tr>
-          </thead>
-          <tbody>
-            {adminBookings.map(b => (
-              <tr key={b.id}>
-                <td>{b.guestName}<br/><small>{b.roomType}</small></td>
-                <td>{b.startDate} / {b.endDate}</td>
-                <td>
-                  <select value={b.status} onChange={(e) => updateBooking(b.id, {status: e.target.value})}>
-                    <option value="Pending">Pending</option>
-                    <option value="Confirmed">Confirmed</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
-                </td>
-                <td>
-                  <button onClick={() => updateBooking(b.id, {paid: !b.paid})} style={{background: b.paid ? 'green' : 'red', color: 'white', border:'none', padding:'5px', borderRadius:'4px'}}>
-                    {b.paid ? 'Paid' : 'Mark Paid'}
-                  </button>
-                </td>
+
+        <div className="admin-table-container" style={{ overflowX: 'auto' }}>
+          <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
+            <thead style={{ background: '#f4f4f4' }}>
+              <tr>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Guest</th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Stay Dates</th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Status</th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Payment</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {adminBookings.map(b => (
+                <tr key={b.id}>
+                  <td style={{ padding: '12px', borderBottom: '1px solid #eee' }}>
+                    <strong>{b.guestName}</strong><br/><small style={{color: '#666'}}>{b.roomType}</small>
+                  </td>
+                  <td style={{ padding: '12px', borderBottom: '1px solid #eee' }}>{b.startDate} to {b.endDate}</td>
+                  <td style={{ padding: '12px', borderBottom: '1px solid #eee' }}>
+                    <select value={b.status || 'Pending'} onChange={(e) => updateBooking(b.id, { status: e.target.value })} style={{ padding: '5px', borderRadius: '4px' }}>
+                      <option value="Pending">Pending</option>
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+                  </td>
+                  <td style={{ padding: '12px', borderBottom: '1px solid #eee' }}>
+                    <button onClick={() => updateBooking(b.id, { paid: !b.paid })} style={{ padding: '5px 10px', borderRadius: '15px', border: 'none', cursor: 'pointer', background: b.paid ? '#2ecc71' : '#e74c3c', color: 'white' }}>
+                      {b.paid ? `Paid` : "Mark Paid"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 }
 
+// --- MAIN APP COMPONENT ---
 export default function App() {
   const [view, setView] = useState('guest'); 
   const [booking, setBooking] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [adminPassword, setAdminPassword] = useState("");
+  const [loginError, setLoginError] = useState(false);
   const [availability, setAvailability] = useState({ 
     standard: true, deluxe: true, executive: true, hall: true, grounds: true 
   });
   const [dates, setDates] = useState({ start: '', end: '' });
   const [numNights, setNumNights] = useState(1);
 
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (adminPassword === 'admin123') {
+      setView('admin');
+      setLoginError(false);
+      setAdminPassword("");
+    } else {
+      setLoginError(true);
+    }
+  };
+
   useEffect(() => {
-    fetch(`${API_URL}/api/availability`).then(res => res.json()).then(setAvailability).catch(() => {});
-  }, []);
+    const fetchAvail = () => {
+      fetch(`${API_URL}/api/availability`).then(res => res.json()).then(setAvailability).catch(() => {});
+    };
+    fetchAvail();
+    const interval = setInterval(fetchAvail, 5000); 
+    return () => clearInterval(interval);
+  }, [view]);
 
   useEffect(() => {
     if (dates.start && dates.end) {
@@ -129,28 +169,27 @@ export default function App() {
 
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
-    // Logic: Rooms (ID 1-3) multiply by nights. Events (ID 4-5) are flat rate.
-    const totalPrice = booking.id < 4 ? booking.price * numNights : booking.price;
-
+    const finalPrice = booking.price * (booking.id < 4 ? numNights : 1);
     const payload = {
       guestName: e.target.guestName.value,
       email: e.target.email.value,
       roomType: booking.name,
-      price: Number(totalPrice),
+      price: Number(finalPrice), 
       startDate: dates.start,
-      endDate: dates.end
+      endDate: dates.end,
+      status: 'Pending',
+      paid: false
     };
 
     try {
-      const res = await fetch(`${API_URL}/api/book`, {
+      const response = await fetch(`${API_URL}/api/book`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      if (res.ok) {
-        setIsSuccess(true);
-        setTimeout(() => { setBooking(null); setIsSuccess(false); setDates({start:'', end:''}); }, 4000);
-      } else { throw new Error(); }
+      if (!response.ok) throw new Error();
+      setIsSuccess(true);
+      setTimeout(() => { setBooking(null); setIsSuccess(false); setDates({ start: '', end: '' }); }, 4000);
     } catch {
       alert("Booking failed. Please check your connection.");
     }
@@ -160,12 +199,13 @@ export default function App() {
 
   if (view === 'login') {
     return (
-      <div className="login-container" style={{display:'flex', justifyContent:'center', alignItems:'center', height:'100vh'}}>
-        <form onSubmit={(e) => { e.preventDefault(); if(adminPassword === 'admin123') setView('admin'); else alert('Wrong password'); }} style={{padding:'40px', background:'#fff', borderRadius:'8px', boxShadow:'0 4px 10px rgba(0,0,0,0.1)'}}>
-          <h3>Staff Login</h3>
-          <input type="password" placeholder="Password" onChange={(e) => setAdminPassword(e.target.value)} style={{display:'block', width:'100%', margin:'10px 0', padding:'10px'}} />
-          <button type="submit" className="btn-book" style={{width:'100%'}}>Login</button>
-          <button type="button" onClick={() => setView('guest')} style={{background:'none', border:'none', marginTop:'10px', color:'gray', cursor:'pointer'}}>Cancel</button>
+      <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f4f4f4' }}>
+        <form onSubmit={handleLogin} style={{ background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', width: '320px', textAlign: 'center' }}>
+          <img src="images/logo2.jpeg" alt="Logo" style={{ height: '60px', marginBottom: '20px' }} />
+          <h3>Staff Portal</h3>
+          <input type="password" placeholder="Password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '10px', border: loginError ? '2px solid red' : '1px solid #ddd' }} />
+          <button type="submit" className="btn-book" style={{ width: '100%', background: '#c19d68', color: 'white', border: 'none', padding: '12px', cursor: 'pointer' }}>Login</button>
+          <p onClick={() => setView('guest')} style={{ cursor: 'pointer', textDecoration: 'underline', marginTop: '15px', color: '#666' }}>Return Home</p>
         </form>
       </div>
     );
@@ -174,40 +214,39 @@ export default function App() {
   return (
     <div className="main-wrapper">
       <nav className="navbar">
-        <div className="container nav-flex">
-          <div className="logo" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-             <img src="images/logo2.jpeg" alt="Logo" style={{height: '40px'}} />
-             <span>ROYAL 'N' HOTEL</span>
+        <div className="container nav-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 0' }}>
+          <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <img src="images/logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
+            <span style={{ fontWeight: 'bold' }}>ROYAL 'N' HOTEL</span>
           </div>
-          <ul className="nav-links">
-            <li><a href="#rooms">Rooms</a></li>
-            <li><a href="#events">Events</a></li>
-            <li onClick={() => setView('login')} style={{cursor: 'pointer', fontSize: '10px', color: '#ccc'}}>Staff</li>
+          <ul className="nav-links" style={{ display: 'flex', gap: '20px', listStyle: 'none' }}>
+            <li><a href="#rooms" style={{ textDecoration: 'none', color: '#333' }}>Rooms</a></li>
+            <li><a href="#events" style={{ textDecoration: 'none', color: '#333' }}>Events</a></li>
           </ul>
         </div>
       </nav>
 
-      <header className="hero-section" style={{backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('images/hero.jpg')`}}>
+      <header className="hero-section" style={{ height: '60vh', background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("images/hero.jpg") center/cover', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textAlign: 'center' }}>
         <div className="hero-content">
-          <h1 className="hero-title">Experience Timeless Elegance</h1>
-          <a href="#rooms" className="btn-primary">Explore Now</a>
+          <h1 style={{ fontSize: '3rem' }}>Experience Timeless Elegance</h1>
+          <p>Luxury redefined in the heart of the city.</p>
         </div>
       </header>
 
-      <section id="rooms" className="container section">
-        <h2 style={{textAlign: 'center', margin: '40px 0'}}>Our Accommodations</h2>
-        <div className="room-grid">
-          {[...roomsData, ...eventsData].map(item => (
-            <div key={item.id} className="room-card">
-              <div style={{height: '220px', background: `url(${item.img}) center/cover`, position: 'relative'}}>
-                {!availability[item.key] && <div className="sold-out-overlay" style={{position:'absolute', inset:0, background:'rgba(0,0,0,0.6)', color:'white', display:'flex', justifyContent:'center', alignItems:'center'}}>FULL</div>}
+      <section id="rooms" className="container" style={{ padding: '60px 0' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Our Rooms</h2>
+        <div className="room-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+          {roomsData.map(room => (
+            <div key={room.id} className="room-card" style={{ border: '1px solid #eee', borderRadius: '10px', overflow: 'hidden' }}>
+              <div style={{ height: '220px', background: `url(${room.img}) center/cover`, position: 'relative' }}>
+                {!availability[room.key] && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' }}>FULL</div>}
               </div>
-              <div style={{padding: '20px'}}>
-                <h3>{item.name}</h3>
-                <p style={{fontSize: '0.8rem', color: '#666'}}>{item.package}</p>
-                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px'}}>
-                  <span style={{fontWeight: 'bold'}}>GH₵ {item.price}{item.id < 4 ? '/night' : ''}</span>
-                  <button className="btn-book" onClick={() => setBooking(item)} disabled={!availability[item.key]}>Book Now</button>
+              <div style={{ padding: '20px' }}>
+                <h3>{room.name}</h3>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>{room.package}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+                  <span style={{ fontWeight: 'bold' }}>GH₵ {room.price}/night</span>
+                  <button className="btn-book" onClick={() => setBooking(room)} disabled={!availability[room.key]}>Book Now</button>
                 </div>
               </div>
             </div>
@@ -215,31 +254,79 @@ export default function App() {
         </div>
       </section>
 
+      <section id="events" className="container" style={{ padding: '60px 0', background: '#fdfdfd' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Events & Grounds</h2>
+        <div className="room-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+          {eventsData.map(event => (
+            <div key={event.id} className="room-card" style={{ border: '1px solid #eee', borderRadius: '10px', overflow: 'hidden', background: '#fff' }}>
+              <div style={{ height: '220px', background: `url(${event.img}) center/cover`, position: 'relative' }}>
+                {!availability[event.key] && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' }}>BOOKED</div>}
+              </div>
+              <div style={{ padding: '20px' }}>
+                <h3>{event.name}</h3>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>{event.package}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+                  <span style={{ fontWeight: 'bold' }}>GH₵ {event.price} (Flat)</span>
+                  <button className="btn-book" onClick={() => setBooking(event)} disabled={!availability[event.key]}>Enquire Now</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <footer className="main-footer" style={{ background: '#1a1a1a', color: '#fff', padding: '60px 0 20px', marginTop: '40px' }}>
+        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px' }}>
+          <div>
+            <img src="images/logo2.jpeg" alt="Logo" onClick={() => setView('login')} style={{ height: '60px', borderRadius: '5px', cursor: 'pointer', marginBottom: '15px' }} />
+            <h3 style={{ color: '#c19d68' }}>ROYAL 'N' HOTEL</h3>
+            <p style={{ color: '#aaa', fontSize: '0.9rem' }}>World-Class Hospitality since 2026.</p>
+          </div>
+          <div>
+            <h4 style={{ borderBottom: '1px solid #333', paddingBottom: '10px' }}>Quick Links</h4>
+            <ul style={{ listStyle: 'none', padding: 0, lineHeight: '2' }}>
+              <li><a href="#rooms" style={{ color: '#aaa', textDecoration: 'none' }}>Rooms</a></li>
+              <li><a href="#events" style={{ color: '#aaa', textDecoration: 'none' }}>Events</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 style={{ borderBottom: '1px solid #333', paddingBottom: '10px' }}>Contact</h4>
+            <p style={{ color: '#aaa', fontSize: '0.9rem' }}>📍 Accra, Ghana</p>
+            <p style={{ color: '#aaa', fontSize: '0.9rem' }}>📞 +233 (0) 00 000 0000</p>
+          </div>
+        </div>
+        <div style={{ borderTop: '1px solid #333', marginTop: '40px', paddingTop: '20px', textAlign: 'center', color: '#666', fontSize: '0.8rem' }}>
+          <p>© 2026 Royal 'N' Hotel. Designed for Excellence.</p>
+        </div>
+      </footer>
+
       {booking && (
-        <div className="modal-overlay" onClick={() => setBooking(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={() => setBooking(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ background: '#fff', padding: '30px', borderRadius: '10px', width: '90%', maxWidth: '400px' }}>
             {!isSuccess ? (
               <form onSubmit={handleBookingSubmit} className="booking-form">
-                <h3>Reserve {booking.name}</h3>
-                <input name="guestName" placeholder="Full Name" required style={{display:'block', width:'100%', marginBottom:'10px', padding:'10px'}} />
-                <input name="email" type="email" placeholder="Email Address" required style={{display:'block', width:'100%', marginBottom:'10px', padding:'10px'}} />
-                <div style={{display: 'flex', gap: '10px', marginBottom:'10px'}}>
-                  <div style={{flex:1}}>
-                    <label style={{fontSize:'10px'}}>Check-in</label>
-                    <input type="date" min={new Date().toISOString().split('T')[0]} onChange={e => setDates({...dates, start: e.target.value})} required style={{width:'100%', padding:'10px'}} />
+                <h3 style={{ margin: '0 0 20px' }}>Reserve {booking.name}</h3>
+                <input name="guestName" placeholder="Full Name" required style={{ width: '100%', padding: '10px', marginBottom: '10px' }} />
+                <input name="email" type="email" placeholder="Email" required style={{ width: '100%', padding: '10px', marginBottom: '10px' }} />
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.7rem' }}>Check-in</label>
+                    <input type="date" min={new Date().toISOString().split("T")[0]} required onChange={e => setDates({...dates, start: e.target.value})} style={{ width: '100%' }} />
                   </div>
-                  <div style={{flex:1}}>
-                    <label style={{fontSize:'10px'}}>Check-out</label>
-                    <input type="date" min={dates.start || new Date().toISOString().split('T')[0]} onChange={e => setDates({...dates, end: e.target.value})} required style={{width:'100%', padding:'10px'}} />
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.7rem' }}>Check-out</label>
+                    <input type="date" min={dates.start} required disabled={!dates.start} onChange={e => setDates({...dates, end: e.target.value})} style={{ width: '100%' }} />
                   </div>
                 </div>
-                <div style={{marginBottom:'10px', fontSize:'14px', fontWeight:'bold', color:'#c19d68'}}>
-                   Total: GH₵ {booking.id < 4 ? (booking.price * numNights).toLocaleString() : booking.price.toLocaleString()}
-                </div>
-                <button type="submit" className="btn-submit" style={{width:'100%', padding:'12px', background:'#333', color:'#fff', border:'none', cursor:'pointer'}}>Confirm Reservation</button>
+                <button type="submit" style={{ width: '100%', padding: '12px', background: '#333', color: '#fff', border: 'none', borderRadius: '5px' }}>
+                  Confirm (GH₵ {booking.id < 4 ? (booking.price * numNights).toLocaleString() : booking.price.toLocaleString()})
+                </button>
               </form>
             ) : (
-              <div style={{textAlign: 'center', padding:'20px'}}><h2>✓ Sent!</h2><p>Our team will contact you soon.</p></div>
+              <div style={{ textAlign: 'center', padding: '20px' }}>
+                <h2 style={{ color: '#2ecc71' }}>✓ Sent!</h2>
+                <p>Check your email for confirmation.</p>
+              </div>
             )}
           </div>
         </div>
