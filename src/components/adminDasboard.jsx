@@ -1,74 +1,131 @@
 import { useState, useEffect } from 'react';
 
-function AdminDashboard({ setView }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
-  const [_adminBookings, setAdminBookings] = useState([]);
-  const [_availability, setAvailability] = useState({
-    standard: true, deluxe: true, executive: true, hall: true, grounds: true
-  });
+const API_URL = import.meta.env.VITE_API_URL || "https://royal-n-api-1.onrender.com";
 
-  // Simple hardcoded credential
-  const ADMIN_PASSWORD = "admin123"; 
+const roomsDataKeys = ['standard', 'deluxe', 'executive', 'hall', 'grounds'];
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-    } else {
-      alert("Incorrect Password");
-    }
-  };
+export default function AdminDashboard({ setView }) {
+  const [adminBookings, setAdminBookings] = useState([]);
+  const [availability, setAvailability] = useState(
+    roomsDataKeys.reduce((acc, key) => ({ ...acc, [key]: true }), {})
+  );
 
+  // --- FETCH BOOKINGS & AVAILABILITY ---
   const fetchData = () => {
-    if (!isAuthenticated) return; // Only fetch if logged in
-    fetch('http://localhost:5000/api/bookings').then(res => res.json()).then(setAdminBookings).catch(() => {});
-    fetch('http://localhost:5000/api/availability').then(res => res.json()).then(setAvailability).catch(() => {});
+    fetch(`${API_URL}/api/bookings`)
+      .then(res => res.json())
+      .then(setAdminBookings)
+      .catch(() => {});
+
+    fetch(`${API_URL}/api/availability`)
+      .then(res => res.json())
+      .then(setAvailability)
+      .catch(() => {});
   };
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5000);
+    const interval = setInterval(fetchData, 8000);
     return () => clearInterval(interval);
-  }, [isAuthenticated]);
+  }, []);
 
-  // --- LOGIN SCREEN VIEW ---
-  if (!isAuthenticated) {
-    return (
-      <div className="login-overlay" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f4f4f4' }}>
-        <form onSubmit={handleLogin} style={{ background: 'white', padding: '40px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', textAlign: 'center', width: '350px' }}>
-          <h2 style={{ marginBottom: '10px' }}>Admin Access</h2>
-          <p style={{ color: '#666', marginBottom: '20px', fontSize: '0.9rem' }}>Please enter your credentials</p>
-          <input 
-            type="password" 
-            placeholder="Enter Admin Password" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ width: '100%', padding: '12px', marginBottom: '20px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '1rem' }}
-          />
-          <button type="submit" className="btn-book" style={{ width: '100%', padding: '12px' }}>Login</button>
-          <button onClick={() => setView('guest')} style={{ background: 'none', border: 'none', marginTop: '15px', color: '#888', cursor: 'pointer' }}>Back to Site</button>
-        </form>
-      </div>
+  // --- UPDATE BOOKING ---
+  const updateBooking = (id, updates) => {
+    setAdminBookings(prev =>
+      prev.map(b => (b.id === id ? { ...b, ...updates } : b))
     );
-  }
 
-  // --- ACTUAL DASHBOARD VIEW (Shown only if logged in) ---
+    fetch(`${API_URL}/api/bookings/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+  };
+
+  // --- TOGGLE AVAILABILITY ---
+  const toggleStatus = (key) => {
+    const newStatus = !availability[key];
+    setAvailability(prev => ({ ...prev, [key]: newStatus }));
+
+    fetch(`${API_URL}/api/availability`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roomType: key, status: newStatus })
+    });
+  };
+
   return (
-    <div className="admin-container">
-      <nav className="admin-nav">
-        <h2 className="logo">ROYAL 'N' HOTEL</h2>
-        <div style={{ display: 'flex', gap: '10px' }}>
-            <span style={{ alignSelf: 'center', color: '#2ecc71', fontSize: '0.8rem' }}>● Logged In</span>
-            <button onClick={() => setView('guest')} className="btn-book">Logout</button>
+    <div className="admin-container" style={{ padding: '20px', background: '#fff', minHeight: '100vh' }}>
+      {/* NAVBAR */}
+      <nav className="admin-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src="/logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
+          <h2 style={{ margin: 0 }}>ROYAL 'N' PANEL</h2>
         </div>
+        <button onClick={() => setView('guest')} style={{ background: '#333', color: 'white', padding: '10px 20px', borderRadius: '5px', border: 'none', cursor: 'pointer' }}>
+          Logout to Site
+        </button>
       </nav>
 
-      <div className="admin-content">
-        {/* ... (Keep your existing Dashboard content: Toggles, Table, etc.) ... */}
+      {/* STATS */}
+      <div className="stats-row" style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
+        <div className="stat-card" style={{ flex: 1, padding: '20px', border: '1px solid #eee', borderRadius: '10px' }}>
+          <h3 style={{ fontSize: '1.5rem', margin: '0 0 10px 0' }}>
+            GH₵ {adminBookings.filter(b => b.paid).reduce((sum, b) => sum + (Number(b.price) || 0), 0).toLocaleString()}
+          </h3>
+          <p style={{ color: '#666', margin: 0 }}>Total Paid Revenue</p>
+        </div>
+        <div className="stat-card" style={{ flex: 1, padding: '20px', border: '1px solid #eee', borderRadius: '10px' }}>
+          <h3 style={{ fontSize: '1.5rem', margin: '0 0 10px 0' }}>{adminBookings.length}</h3>
+          <p style={{ color: '#666', margin: 0 }}>Total Reservations</p>
+        </div>
+      </div>
+
+      {/* INVENTORY CONTROL */}
+      <h3>Inventory Control</h3>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '30px' }}>
+        {roomsDataKeys.map(key => (
+          <button key={key} onClick={() => toggleStatus(key)} style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', background: availability[key] ? '#d4edda' : '#f8d7da', cursor: 'pointer', textTransform: 'capitalize' }}>
+            {key}: {availability[key] ? '✅ Open' : '❌ Full'}
+          </button>
+        ))}
+      </div>
+
+      {/* BOOKINGS TABLE */}
+      <div className="admin-table-container" style={{ overflowX: 'auto' }}>
+        <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
+          <thead style={{ background: '#f4f4f4' }}>
+            <tr>
+              <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Guest</th>
+              <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Stay Dates</th>
+              <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Status</th>
+              <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Payment</th>
+            </tr>
+          </thead>
+          <tbody>
+            {adminBookings.map(b => (
+              <tr key={b.id}>
+                <td style={{ padding: '12px', borderBottom: '1px solid #eee' }}>
+                  <strong>{b.guestName}</strong><br/><small style={{color: '#666'}}>{b.roomType}</small>
+                </td>
+                <td style={{ padding: '12px', borderBottom: '1px solid #eee' }}>{b.startDate} to {b.endDate}</td>
+                <td style={{ padding: '12px', borderBottom: '1px solid #eee' }}>
+                  <select value={b.status || 'Pending'} onChange={(e) => updateBooking(b.id, { status: e.target.value })} style={{ padding: '5px', borderRadius: '4px' }}>
+                    <option value="Pending">Pending</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </td>
+                <td style={{ padding: '12px', borderBottom: '1px solid #eee' }}>
+                  <button onClick={() => updateBooking(b.id, { paid: !b.paid })} style={{ padding: '5px 10px', borderRadius: '15px', border: 'none', cursor: 'pointer', background: b.paid ? '#2ecc71' : '#e74c3c', color: 'white' }}>
+                    {b.paid ? `Paid` : "Mark Paid"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 }
-
-export default AdminDashboard;

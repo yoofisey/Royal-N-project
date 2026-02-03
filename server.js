@@ -1,161 +1,106 @@
-import express from 'express';
-import cors from 'cors';
-import nodemailer from 'nodemailer';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
+import express from "express";
+import cors from "cors";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+import { createClient } from "@supabase/supabase-js";
 
 dotenv.config();
 
 const app = express();
-app.use(cors({
-  origin: "https://royal-n-hotel.onrender.com",
-  methods: ["GET", "POST"],
-  credentials: true
-}));
+app.use(cors({ origin: "*", methods: ["GET", "POST", "PATCH"], credentials: true }));
 app.use(express.json());
 
-/* =======================
-   MONGODB CONNECTION
-======================= */
-if (!process.env.MONGO_URI) {
-  console.error("❌ MONGO_URI not set");
+// --- SUPABASE SETUP ---
+const SUPABASE_URL = "https://wkuoslgynuvegmwmdedg.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrdW9zbGd5bnV2ZWdtd21kZWRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwODI2NjEsImV4cCI6MjA4NTY1ODY2MX0.n0Z9j24MoxMXjZpHP5SKkRLkZ8adPcWMHA6IBnC9MwE";
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.error("❌ Supabase credentials missing");
   process.exit(1);
 }
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ Connected to MongoDB"))
-  .catch(err => {
-    console.error("❌ MongoDB connection error:", err.message);
-    process.exit(1);
-  });
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* =======================
-   SCHEMAS & MODELS
-======================= */
-const BookingSchema = new mongoose.Schema({
-  guestName: String,
-  email: String,
-  roomType: String,
-  price: Number,
-  startDate: String,
-  endDate: String,
-  status: { type: String, default: 'Pending' },
-  paid: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now }
-});
-
-const AvailabilitySchema = new mongoose.Schema({
-  roomType: { type: String, unique: true },
-  status: Boolean
-});
-
-const Booking = mongoose.model('Booking', BookingSchema);
-const Availability = mongoose.model('Availability', AvailabilitySchema);
-
-/* =======================
-   EMAIL CONFIG
-======================= */
+// --- EMAIL CONFIG ---
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
-/* =======================
-   ROUTES
-======================= */
+// --- ROUTES ---
 
-// Health check (important for Render)
-app.get('/', (_, res) => {
-  res.send('Royal N Hotel API is running 🚀');
-});
+// Health check
+app.get("/", (_, res) => res.send("Royal N Hotel API is running 🚀"));
 
 // Get all bookings
-app.get('/api/bookings', async (_, res) => {
-  try {
-    const bookings = await Booking.find().sort({ createdAt: -1 });
-    res.json(bookings);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+app.get("/api/bookings", async (_, res) => {
+  const { data, error } = await supabase.from("bookings").select("*").order("created_at", { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
 // Get availability
-app.get('/api/availability', async (_, res) => {
-  try {
-    const avail = await Availability.find();
-    const formatted = avail.reduce(
-      (acc, curr) => ({ ...acc, [curr.roomType]: curr.status }),
-      {}
-    );
-    res.json(formatted);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+app.get("/api/availability", async (_, res) => {
+  const { data, error } = await supabase.from("availability").select("*");
+  if (error) return res.status(500).json({ error: error.message });
+  const formatted = data.reduce((acc, curr) => ({ ...acc, [curr.room_type]: curr.status }), {});
+  res.json(formatted);
 });
 
 // Create booking
 app.post("/api/book", async (req, res) => {
   try {
-    console.log("📦 Booking payload:", req.body);
+    const { guestName, email, roomType, price, startDate, endDate, status, paid } = req.body;
 
-    const booking = new Booking(req.body);
-    await booking.save();
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([{ guest_name: guestName, email, room_type: roomType, price, start_date: startDate, end_date: endDate, status, paid }])
+      .select();
 
+    if (error) return res.status(500).json({ error: error.message });
+
+    // Send confirmation email
     try {
       await transporter.sendMail({
         from: `"Royal N Hotel" <${process.env.EMAIL_USER}>`,
-        to: booking.email,
-        subject: 'Reservation Received - Royal N Hotel',
-        html: `
-          <h3>Hello ${booking.guestName},</h3>
-          <p>Your booking for <strong>${booking.roomType}</strong> has been received.</p>
-          <p>Status: Pending confirmation</p>
-        `
+        to: email,
+        subject: "Reservation Received - Royal N Hotel",
+        html: `<h3>Hello ${guestName},</h3><p>Your booking for <strong>${roomType}</strong> has been received.</p><p>Status: Pending confirmation</p>`,
       });
     } catch (mailErr) {
       console.warn("⚠️ Email failed:", mailErr.message);
     }
 
-    res.status(201).json(booking);
+    res.status(201).json(data[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Update availability
-app.patch('/api/availability', async (req, res) => {
+// Update availability (Admin)
+app.patch("/api/availability", async (req, res) => {
   const { roomType, status } = req.body;
+  const { error } = await supabase
+    .from("availability")
+    .upsert({ room_type: roomType, status }, { onConflict: "room_type" });
 
-  try {
-    await Availability.findOneAndUpdate(
-      { roomType },
-      { status },
-      { upsert: true, new: true }
-    );
-    res.json({ message: "Availability updated" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ message: "Availability updated" });
 });
 
 // Update booking (Admin)
-app.patch('/api/bookings/:id', async (req, res) => {
-  try {
-    await Booking.findByIdAndUpdate(req.params.id, req.body);
-    res.json({ message: "Booking updated" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+app.patch("/api/bookings/:id", async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+
+  const { error } = await supabase.from("bookings").update(updates).eq("id", id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ message: "Booking updated" });
 });
 
-/* =======================
-   START SERVER
-======================= */
+// --- START SERVER ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () =>
-  console.log(`🚀 Server running on port ${PORT}`)
-);
+app.listen(PORT, "0.0.0.0", () => console.log(`🚀 Server running on port ${PORT}`));
