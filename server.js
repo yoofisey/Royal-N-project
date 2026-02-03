@@ -7,7 +7,13 @@ import process from 'process';
 const app = express();
 
 // 1. CORS: Wide open for the frontend connection
-app.use(cors());
+app.use(cors(
+  {
+  origin: '*',
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],  
+  allowedHeaders: ['Content-Type'],
+  }
+));
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
