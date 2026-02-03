@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 function AdminDashboard({ setView }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [adminBookings, setAdminBookings] = useState([]);
-  const [availability, setAvailability] = useState({
+  const [_adminBookings, setAdminBookings] = useState([]);
+  const [_availability, setAvailability] = useState({
     standard: true, deluxe: true, executive: true, hall: true, grounds: true
   });
 
