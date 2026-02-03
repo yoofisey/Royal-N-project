@@ -6,14 +6,14 @@ const API_URL = import.meta.env.VITE_API_URL || "https://royal-n-api-1.onrender.
 
 // --- DATA CONFIGURATION ---
 const roomsData = [
-  { id: 1, key: 'standard', name: 'The Essential Stay', price: 450, package: 'Perfect for the solo traveler. Includes High-Speed Fiber WiFi, Gourmet Breakfast for 1, and 24/7 Concierge access.', img: 'images/standard.jpg' },
-  { id: 2, key: 'deluxe', name: 'The Royal Experience', price: 550, package: 'Elevate your visit. Includes All-Day Pool & Gym access, Buffet Breakfast for 1, and a complimentary Welcome Drink on arrival.', img: 'images/deluxe.jpg' },
-  { id: 3, key: 'executive', name: 'The Executive Retreat', price: 650, package: 'Luxury without compromise. Includes Full Buffet Breakfast for 2, Private Balcony, Gym & Pool access, and Late Check-out privileges.', img: 'images/executive.jpg' },
+  { id: 1, key: 'standard', name: 'The Essential Stay', price: 450, package: 'Perfect for the solo traveler. Includes High-Speed Fiber WiFi, Gourmet Breakfast for 1, and 24/7 Concierge access.', img: 'standard.jpg' },
+  { id: 2, key: 'deluxe', name: 'The Royal Experience', price: 550, package: 'Elevate your visit. Includes All-Day Pool & Gym access, Buffet Breakfast for 1, and a complimentary Welcome Drink on arrival.', img: 'deluxe.jpg' },
+  { id: 3, key: 'executive', name: 'The Executive Retreat', price: 650, package: 'Luxury without compromise. Includes Full Buffet Breakfast for 2, Private Balcony, Gym & Pool access, and Late Check-out privileges.', img: 'executive.jpg' },
 ];
 
 const eventsData = [
-  { id: 4, key: 'hall', name: 'Corporate Summit Hall', price: 3000, package: 'Professional setting with 50 Chairs, 2 Presenter Tables, High-End Audio/Visual gear, and dedicated photography space.', img: 'images/hall.jpg' },
-  { id: 5, key: 'grounds', name: 'The Grand Grounds', price: 4500, package: 'Our premier outdoor space. Perfect for Weddings or Proposals. Includes bespoke setup, photography access, and evening lighting.', img: 'images/grounds.jpg' },
+  { id: 4, key: 'hall', name: 'Corporate Summit Hall', price: 3000, package: 'Professional setting with 50 Chairs, 2 Presenter Tables, High-End Audio/Visual gear, and dedicated photography space.', img: 'hall.jpg' },
+  { id: 5, key: 'grounds', name: 'The Grand Grounds', price: 4500, package: 'Our premier outdoor space. Perfect for Weddings or Proposals. Includes bespoke setup, photography access, and evening lighting.', img: 'grounds.jpg' },
 ];
 
 // --- ADMIN DASHBOARD COMPONENT ---
@@ -57,7 +57,7 @@ function AdminDashboard({ setView }) {
     <div className="admin-container" style={{ padding: '20px', background: '#fff', minHeight: '100vh' }}>
       <nav className="admin-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src="images/logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
+          <img src="logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
           <h2 style={{ margin: 0 }}>ROYAL 'N' PANEL</h2>
         </div>
         <button onClick={() => setView('guest')} className="btn-book" style={{ background: '#333', color: 'white', padding: '10px 20px', borderRadius: '5px', border: 'none', cursor: 'pointer' }}>
@@ -201,7 +201,7 @@ export default function App() {
     return (
       <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f4f4f4' }}>
         <form onSubmit={handleLogin} style={{ background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', width: '320px', textAlign: 'center' }}>
-          <img src="images/logo2.jpeg" alt="Logo" style={{ height: '60px', marginBottom: '20px' }} />
+          <img src="logo2.jpeg" alt="Logo" style={{ height: '60px', marginBottom: '20px' }} />
           <h3>Staff Portal</h3>
           <input type="password" placeholder="Password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '10px', border: loginError ? '2px solid red' : '1px solid #ddd' }} />
           <button type="submit" className="btn-book" style={{ width: '100%', background: '#c19d68', color: 'white', border: 'none', padding: '12px', cursor: 'pointer' }}>Login</button>
@@ -216,7 +216,7 @@ export default function App() {
       <nav className="navbar">
         <div className="container nav-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 0' }}>
           <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img src="images/logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
+            <img src="logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
             <span style={{ fontWeight: 'bold' }}>ROYAL 'N' HOTEL</span>
           </div>
           <ul className="nav-links" style={{ display: 'flex', gap: '20px', listStyle: 'none' }}>
@@ -226,7 +226,7 @@ export default function App() {
         </div>
       </nav>
 
-      <header className="hero-section" style={{ height: '60vh', background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("images/hero.jpg") center/cover', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textAlign: 'center' }}>
+      <header className="hero-section" style={{ height: '60vh', background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("hero.jpg") center/cover', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textAlign: 'center' }}>
         <div className="hero-content">
           <h1 style={{ fontSize: '3rem' }}>Experience Timeless Elegance</h1>
           <p>Luxury redefined in the heart of the city.</p>
@@ -278,7 +278,7 @@ export default function App() {
       <footer className="main-footer" style={{ background: '#1a1a1a', color: '#fff', padding: '60px 0 20px', marginTop: '40px' }}>
         <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px' }}>
           <div>
-            <img src="images/logo2.jpeg" alt="Logo" onClick={() => setView('login')} style={{ height: '60px', borderRadius: '5px', cursor: 'pointer', marginBottom: '15px' }} />
+            <img src="logo2.jpeg" alt="Logo" onClick={() => setView('login')} style={{ height: '60px', borderRadius: '5px', cursor: 'pointer', marginBottom: '15px' }} />
             <h3 style={{ color: '#c19d68' }}>ROYAL 'N' HOTEL</h3>
             <p style={{ color: '#aaa', fontSize: '0.9rem' }}>World-Class Hospitality since 2026.</p>
           </div>
