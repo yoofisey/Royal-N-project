@@ -2,10 +2,8 @@ import { useState, useEffect } from 'react';
 import './index.css';
 import AdminDashboard from './components/adminDashboard';
 
-// --- API CONFIGURATION ---
 const API_URL = import.meta.env.VITE_API_URL || "https://royal-n-api-1.onrender.com";
 
-// --- DATA CONFIGURATION ---
 const roomsData = [
   { id: 1, key: 'standard', name: 'The Essential Stay', price: 450, package: 'Perfect for the solo traveler. Includes High-Speed Fiber WiFi, Gourmet Breakfast for 1, and 24/7 Concierge access.', img: '/standard.jpg' },
   { id: 2, key: 'deluxe', name: 'The Royal Experience', price: 550, package: 'Elevate your visit. Includes All-Day Pool & Gym access, Buffet Breakfast for 1, and a complimentary Welcome Drink on arrival.', img: '/deluxe.jpg' },
@@ -53,7 +51,6 @@ export default function App() {
         setAvailability(data);
       } catch (err) {
         console.error("Availability fetch error:", err.message);
-        // fallback: mark all as available to not block the UI
         setAvailability({ standard: true, deluxe: true, executive: true, hall: true, grounds: true });
       } finally {
         setLoadingAvailability(false);
@@ -75,6 +72,8 @@ export default function App() {
   // --- HANDLE BOOKING SUBMISSION ---
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
+    if (!booking) return;
+
     const finalPrice = booking.price * (booking.id < 4 ? numNights : 1);
     const payload = {
       guestName: e.target.guestName.value,
@@ -128,11 +127,99 @@ export default function App() {
     );
   }
 
-  // --- MAIN GUEST SITE ---
   return (
     <div className="main-wrapper">
-      {/* NAVBAR, HERO, ROOMS, EVENTS, FOOTER */}
-      {/* ...layout stays exactly the same as your original code... */}
+      {/* NAVBAR */}
+      <nav className="navbar">
+        <div className="container nav-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 0' }}>
+          <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <img src="/logo2.jpeg" alt="Logo" style={{ height: '40px' }} />
+            <span style={{ fontWeight: 'bold' }}>ROYAL 'N' HOTEL</span>
+          </div>
+          <ul className="nav-links" style={{ display: 'flex', gap: '20px', listStyle: 'none' }}>
+            <li><a href="#rooms" style={{ textDecoration: 'none', color: '#333' }}>Rooms</a></li>
+            <li><a href="#events" style={{ textDecoration: 'none', color: '#333' }}>Events</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      {/* HERO */}
+      <header className="hero-section" style={{ height: '60vh', background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("/hero.jpg") center/cover', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textAlign: 'center' }}>
+        <div className="hero-content">
+          <h1 style={{ fontSize: '3rem' }}>Experience Timeless Elegance</h1>
+          <p>Luxury redefined in the heart of the city.</p>
+        </div>
+      </header>
+
+      {/* ROOMS */}
+      <section id="rooms" className="container" style={{ padding: '60px 0' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Our Rooms</h2>
+        <div className="room-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+          {roomsData.map(room => (
+            <div key={room.id} className="room-card" style={{ border: '1px solid #eee', borderRadius: '10px', overflow: 'hidden' }}>
+              <div style={{ height: '220px', background: `url(${room.img}) center/cover`, position: 'relative' }}>
+                {!availability[room.key] && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' }}>FULL</div>}
+              </div>
+              <div style={{ padding: '20px' }}>
+                <h3>{room.name}</h3>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>{room.package}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+                  <span style={{ fontWeight: 'bold' }}>GH₵ {room.price}/night</span>
+                  <button className="btn-book" onClick={() => setBooking(room)} disabled={!availability[room.key]}>Book Now</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* EVENTS */}
+      <section id="events" className="container" style={{ padding: '60px 0', background: '#fdfdfd' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Events & Grounds</h2>
+        <div className="room-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+          {eventsData.map(event => (
+            <div key={event.id} className="room-card" style={{ border: '1px solid #eee', borderRadius: '10px', overflow: 'hidden', background: '#fff' }}>
+              <div style={{ height: '220px', background: `url(${event.img}) center/cover`, position: 'relative' }}>
+                {!availability[event.key] && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' }}>BOOKED</div>}
+              </div>
+              <div style={{ padding: '20px' }}>
+                <h3>{event.name}</h3>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>{event.package}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+                  <span style={{ fontWeight: 'bold' }}>GH₵ {event.price} (Flat)</span>
+                  <button className="btn-book" onClick={() => setBooking(event)} disabled={!availability[event.key]}>Enquire Now</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="main-footer" style={{ background: '#1a1a1a', color: '#fff', padding: '60px 0 20px', marginTop: '40px' }}>
+        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px' }}>
+          <div>
+            <img src="/logo2.jpeg" alt="Logo" style={{ height: '60px', borderRadius: '5px', cursor: 'pointer', marginBottom: '15px' }} />
+            <h3 style={{ color: '#c19d68' }}>ROYAL 'N' HOTEL</h3>
+            <p style={{ color: '#aaa', fontSize: '0.9rem' }}>World-Class Hospitality since 2026.</p>
+          </div>
+          <div>
+            <h4 style={{ borderBottom: '1px solid #333', paddingBottom: '10px' }}>Quick Links</h4>
+            <ul style={{ listStyle: 'none', padding: 0, lineHeight: '2' }}>
+              <li><a href="#rooms" style={{ color: '#aaa', textDecoration: 'none' }}>Rooms</a></li>
+              <li><a href="#events" style={{ color: '#aaa', textDecoration: 'none' }}>Events</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 style={{ borderBottom: '1px solid #333', paddingBottom: '10px' }}>Contact</h4>
+            <p style={{ color: '#aaa', fontSize: '0.9rem' }}>📍 Pokuase, Ghana</p>
+            <p style={{ color: '#aaa', fontSize: '0.9rem' }}>📞 +233 (0)</p>
+          </div>
+        </div>
+        <div style={{ borderTop: '1px solid #333', marginTop: '40px', paddingTop: '20px', textAlign: 'center', color: '#666', fontSize: '0.8rem' }}>
+          <p>© 2026 Royal 'N' Hotel. Designed for Excellence.</p>
+        </div>
+      </footer>
 
       {/* BOOKING MODAL */}
       {booking && (
