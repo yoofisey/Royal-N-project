@@ -52,33 +52,37 @@ export default function App() {
   }, [dates]);
 
   const handleBookingSubmit = async (e) => {
-    e.preventDefault();
-    const finalPrice = booking.price * (booking.id < 4 ? numNights : 1);
-    
-    // Key Fix: Match the snake_case expected by Supabase/Server
-    const payload = {
-      guestName: e.target.guestName.value,
-      email: e.target.email.value,
-      roomType: booking.name,
-      price: Number(finalPrice),
-      startDate: dates.start,
-      endDate: dates.end
-    };
-
-    try {
-      const response = await fetch(`${API_URL}/api/book`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (response.ok) {
-        setIsSuccess(true);
-        setTimeout(() => { setBooking(null); setIsSuccess(false); setDates({start:'', end:''}); }, 4000);
-      } else {
-        alert("Server error during booking.");
-      }
-    } catch (err) { alert("Check your internet connection."); }
+  e.preventDefault();
+  const finalPrice = booking.price * (booking.id < 4 ? numNights : 1);
+  
+  // payload standardized to match server.js and database
+  const payload = {
+    guest_name: e.target.guestName.value,
+    email: e.target.email.value,
+    room_type: booking.name,
+    price: Number(finalPrice),
+    start_date: dates.start,
+    end_date: dates.end
   };
+
+  try {
+    const response = await fetch(`${API_URL}/api/book`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+      setIsSuccess(true);
+      setTimeout(() => { setBooking(null); setIsSuccess(false); }, 3000);
+    } else {
+      const errorData = await response.json();
+      alert(`Booking Error: ${errorData.message || "Unknown error"}`);
+    }
+  } catch (err) {
+    alert("Connection to server failed.");
+  }
+};
 
   if (view === 'admin') return <AdminDashboard setView={setView} />;
   if (view === 'login') {
