@@ -57,12 +57,12 @@ export default function App() {
   
   // payload standardized to match server.js and database
   const payload = {
-    guest_name: e.target.guestName.value,
+    guestName: e.target.guestName.value,
     email: e.target.email.value,
-    room_type: booking.name,
+    roomType: booking.name,
     price: Number(finalPrice),
-    start_date: dates.start,
-    end_date: dates.end
+    startDate: dates.start,
+    endDate: dates.end
   };
 
   try {

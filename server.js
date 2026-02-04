@@ -5,114 +5,89 @@ import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
 
 dotenv.config();
-
 const app = express();
 app.use(express.json());
+app.use(cors());
 
-// --- CONFIG (Use Environment Variables for Security) ---
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://wkuoslgynuvegmwmdedg.supabase.co";
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY; 
-const EMAIL_USER = process.env.EMAIL_USER || "seyyoofi95@gmail.com";
-const EMAIL_PASS = process.env.EMAIL_PASS || "xxjzetykokkltblj";
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
-// --- CORS SETUP ---
-app.use(cors({
-  origin: ["https://royal-n-hotel.onrender.com", "http://localhost:5173"],
-  methods: ["GET", "POST", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+// Test Route
+app.get("/", (_, res) => res.send("Royal N API is Running..."));
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-});
-
-// --- ROUTES ---
-
-app.get("/", (_, res) => res.send("Royal N Hotel API Live 🚀"));
-
-// Get Availability
+// --- 1. GET AVAILABILITY ---
 app.get("/api/availability", async (_, res) => {
-  try {
-    const { data, error } = await supabase.from("availability").select("*");
-    if (error) throw error;
-    const map = Object.fromEntries(data.map(r => [r.room_type, r.status]));
-    res.json(map);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  const { data, error } = await supabase.from("availability").select("*");
+  if (error) return res.status(500).json({ error: error.message });
+  const map = Object.fromEntries(data.map(r => [r.room_type, r.status]));
+  res.json(map);
 });
 
-// Create Booking
+// --- 2. UPDATE AVAILABILITY ---
+app.patch("/api/availability", async (req, res) => {
+  const { room_type, status } = req.body;
+  const { error } = await supabase
+    .from("availability")
+    .upsert({ room_type, status });
+  
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
+});
+
+// --- 3. CREATE BOOKING (CRITICAL FIX) ---
 app.post("/api/book", async (req, res) => {
-  const { guestName, email, roomType, price, startDate, endDate } = req.body;
+  console.log("Received payload:", req.body); // Log to Render console
+  const { guest_name, email, room_type, price, start_date, end_date } = req.body;
 
-  try {
-    const { data, error } = await supabase.from("bookings").insert([{
-      guest_name: guestName,
-      email: email,
-      room_type: roomType,
-      price: price,
-      start_date: startDate,
-      end_date: endDate,
-      status: "pending",
-      paid: false,
-    }]).select();
+  // Insert into Supabase
+  const { data, error } = await supabase.from("bookings").insert([{
+    guest_name, 
+    email, 
+    room_type, 
+    price: Number(price), 
+    start_date, 
+    end_date,
+    status: 'pending',
+    paid: false
+  }]).select();
 
-    if (error) throw error;
-
-    await transporter.sendMail({
-      from: `"Royal N Hotel" <${EMAIL_USER}>`,
-      to: email,
-      subject: "Booking Received - Royal N Hotel",
-      html: `<p>Hello ${guestName}, your request for ${roomType} is pending confirmation.</p>`,
-    });
-
-    res.status(201).json(data[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  if (error) {
+    console.error("Supabase Database Error:", error);
+    return res.status(500).json({ error: error.message });
   }
+
+  // Handle Email separately so it doesn't crash the response
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+  });
+
+  transporter.sendMail({
+    from: `"Royal N Hotel" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Booking Request Received",
+    html: `<h3>Hello ${guest_name}</h3><p>Your request for ${room_type} is being processed.</p>`
+  }).catch(err => console.log("Email failed, but booking was saved to DB."));
+
+  res.status(201).json(data[0]);
 });
 
-// --- ADMIN ROUTES (Simplified Auth for your 'admin123' logic) ---
-
+// --- 4. ADMIN: GET ALL ---
 app.get("/api/bookings", async (_, res) => {
   const { data, error } = await supabase.from("bookings").select("*").order('created_at', { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
 
+// --- 5. ADMIN: UPDATE/DELETE ---
 app.patch("/api/bookings/:id", async (req, res) => {
-  const { id } = req.params;
-  const { data, error } = await supabase.from("bookings").update(req.body).eq("id", id).select().single();
-  if (error) return res.status(500).json({ error: error.message });
-  res.json(data);
+  const { error } = await supabase.from("bookings").update(req.body).eq("id", req.params.id);
+  res.json({ success: !error, error });
 });
-
-app.patch("/api/availability", async (req, res) => {
-  const { roomType, status } = req.body;
-  const { error } = await supabase.from("availability").upsert({ room_type: roomType, status });
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ message: "Updated" });
-});
-// Add this below your other PATCH routes in server.js
 
 app.delete("/api/bookings/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const { error } = await supabase
-      .from("bookings")
-      .delete()
-      .eq("id", id);
-
-    if (error) throw error;
-    res.json({ message: "Booking deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  const { error } = await supabase.from("bookings").delete().eq("id", req.params.id);
+  res.json({ success: !error, error });
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, "0.0.0.0", () => console.log(`🚀 Server running on ${PORT}`));
+app.listen(PORT, "0.0.0.0", () => console.log(`Backend Live on Port ${PORT}`));
