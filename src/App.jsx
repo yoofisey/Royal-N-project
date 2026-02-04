@@ -35,11 +35,11 @@ export default function App() {
           const data = await res.json();
           setAvailability(data);
         }
-      } catch (err) {
-        console.error("Connection failed");
-      }
+      } catch (err) { console.error("Avail fetch error"); }
     };
     fetchAvail();
+    const interval = setInterval(fetchAvail, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -54,6 +54,8 @@ export default function App() {
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     const finalPrice = booking.price * (booking.id < 4 ? numNights : 1);
+    
+    // Key Fix: Match the snake_case expected by Supabase/Server
     const payload = {
       guestName: e.target.guestName.value,
       email: e.target.email.value,
@@ -71,34 +73,23 @@ export default function App() {
       });
       if (response.ok) {
         setIsSuccess(true);
-        setTimeout(() => { setBooking(null); setIsSuccess(false); }, 4000);
+        setTimeout(() => { setBooking(null); setIsSuccess(false); setDates({start:'', end:''}); }, 4000);
+      } else {
+        alert("Server error during booking.");
       }
-    } catch (err) {
-      alert("Booking failed. Check connection.");
-    }
-  };
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (adminPassword === 'admin123') {
-      setView('admin');
-      setAdminPassword("");
-    } else {
-      setLoginError(true);
-    }
+    } catch (err) { alert("Check your internet connection."); }
   };
 
   if (view === 'admin') return <AdminDashboard setView={setView} />;
-
   if (view === 'login') {
     return (
       <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f4f4f4' }}>
-        <form onSubmit={handleLogin} style={{ background: 'white', padding: '40px', borderRadius: '15px', width: '320px', textAlign: 'center' }}>
+        <form onSubmit={(e) => { e.preventDefault(); if(adminPassword === 'admin123') setView('admin'); else setLoginError(true); }} style={{ background: 'white', padding: '40px', borderRadius: '15px', width: '320px', textAlign: 'center' }}>
           <img src="/logo2.jpeg" alt="Logo" style={{ height: '60px', marginBottom: '20px' }} />
           <h3>Staff Portal</h3>
           <input type="password" placeholder="Password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '10px', border: loginError ? '2px solid red' : '1px solid #ddd' }} />
           <button type="submit" style={{ width: '100%', background: '#c19d68', color: 'white', padding: '12px', border: 'none', cursor: 'pointer' }}>Login</button>
-          <p onClick={() => setView('guest')} style={{ cursor: 'pointer', marginTop: '15px', color: '#666' }}>Return Home</p>
+          <p onClick={() => setView('guest')} style={{ cursor: 'pointer', marginTop: '15px', color: '#666', textDecoration: 'underline' }}>Return Home</p>
         </form>
       </div>
     );
@@ -119,8 +110,11 @@ export default function App() {
         </div>
       </nav>
 
-      <header className="hero-section" style={{ height: '60vh', background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("/hero.jpg") center/cover', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-          <h1 style={{ fontSize: '3rem' }}>Experience Timeless Elegance</h1>
+      <header className="hero-section" style={{ height: '60vh', background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("/hero.jpg") center/cover', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textAlign: 'center' }}>
+        <div>
+          <h1 style={{ fontSize: '3rem', margin: 0 }}>Experience Timeless Elegance</h1>
+          <p>Luxury redefined in the heart of the city.</p>
+        </div>
       </header>
 
       <section id="rooms" className="container" style={{ padding: '60px 0' }}>
@@ -129,14 +123,14 @@ export default function App() {
           {roomsData.map(room => (
             <div key={room.id} className="room-card" style={{ border: '1px solid #eee', borderRadius: '10px', overflow: 'hidden' }}>
               <div style={{ height: '220px', background: `url(${room.img}) center/cover`, position: 'relative' }}>
-                {!availability[room.key] && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>FULL</div>}
+                {!availability[room.key] && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' }}>FULL</div>}
               </div>
               <div style={{ padding: '20px' }}>
                 <h3>{room.name}</h3>
-                <p style={{ color: '#666' }}>{room.package}</p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>{room.package}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
                   <span style={{ fontWeight: 'bold' }}>GH₵ {room.price}/night</span>
-                  <button onClick={() => setBooking(room)} disabled={!availability[room.key]}>Book Now</button>
+                  <button className="btn-book" onClick={() => setBooking(room)} disabled={!availability[room.key]}>Book Now</button>
                 </div>
               </div>
             </div>
@@ -144,9 +138,48 @@ export default function App() {
         </div>
       </section>
 
-      <footer className="main-footer" style={{ background: '#1a1a1a', color: '#fff', padding: '60px 20px', textAlign: 'center' }}>
-        <img src="/logo2.jpeg" alt="Logo" onClick={() => setView('login')} style={{ height: '60px', cursor: 'pointer' }} />
-        <p>© 2026 Royal 'N' Hotel. Pokuase, Ghana.</p>
+      <section id="events" className="container" style={{ padding: '60px 0', background: '#fdfdfd' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Events & Grounds</h2>
+        <div className="room-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+          {eventsData.map(event => (
+            <div key={event.id} className="room-card" style={{ border: '1px solid #eee', borderRadius: '10px', overflow: 'hidden', background: '#fff' }}>
+              <div style={{ height: '220px', background: `url(${event.img}) center/cover`, position: 'relative' }}>
+                {!availability[event.key] && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' }}>BOOKED</div>}
+              </div>
+              <div style={{ padding: '20px' }}>
+                <h3>{event.name}</h3>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>{event.package}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+                  <span style={{ fontWeight: 'bold' }}>GH₵ {event.price} (Flat)</span>
+                  <button className="btn-book" onClick={() => setBooking(event)} disabled={!availability[event.key]}>Enquire Now</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <footer className="main-footer" style={{ background: '#1a1a1a', color: '#fff', padding: '60px 0 20px' }}>
+        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px' }}>
+          <div>
+            <img src="/logo2.jpeg" onClick={() => setView('login')} alt="Logo" style={{ height: '60px', borderRadius: '5px', cursor: 'pointer', marginBottom: '15px' }} />
+            <h3 style={{ color: '#c19d68' }}>ROYAL 'N' HOTEL</h3>
+            <p style={{ color: '#aaa', fontSize: '0.9rem' }}>World-Class Hospitality since 2026.</p>
+          </div>
+          <div>
+            <h4 style={{ borderBottom: '1px solid #333', paddingBottom: '10px' }}>Quick Links</h4>
+            <ul style={{ listStyle: 'none', padding: 0, lineHeight: '2' }}>
+              <li><a href="#rooms" style={{ color: '#aaa', textDecoration: 'none' }}>Rooms</a></li>
+              <li><a href="#events" style={{ color: '#aaa', textDecoration: 'none' }}>Events</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 style={{ borderBottom: '1px solid #333', paddingBottom: '10px' }}>Contact</h4>
+            <p style={{ color: '#aaa', fontSize: '0.9rem' }}>📍 Pokuase, Ghana</p>
+            <p style={{ color: '#aaa', fontSize: '0.9rem' }}>📞 +233 (0) 553 696 197</p>
+            <p style={{ color: '#aaa', fontSize: '0.9rem' }}>📧 royalnhotel3@gmail.com</p>
+          </div>
+        </div>
       </footer>
 
       {booking && (
@@ -158,17 +191,17 @@ export default function App() {
                 <input name="guestName" placeholder="Full Name" required style={{ width: '100%', marginBottom: '10px', padding: '10px' }} />
                 <input name="email" type="email" placeholder="Email" required style={{ width: '100%', marginBottom: '10px', padding: '10px' }} />
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                  <input type="date" required onChange={e => setDates({ ...dates, start: e.target.value })} style={{ flex: 1 }} />
-                  <input type="date" required onChange={e => setDates({ ...dates, end: e.target.value })} style={{ flex: 1 }} />
+                  <input type="date" required min={new Date().toISOString().split("T")[0]} onChange={e => setDates({ ...dates, start: e.target.value })} style={{ flex: 1, padding: '5px' }} />
+                  <input type="date" required min={dates.start} onChange={e => setDates({ ...dates, end: e.target.value })} style={{ flex: 1, padding: '5px' }} />
                 </div>
-                <button type="submit" style={{ width: '100%', padding: '12px', background: '#333', color: '#fff' }}>
+                <button type="submit" style={{ width: '100%', padding: '12px', background: '#333', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
                   Confirm (GH₵ {booking.id < 4 ? (booking.price * numNights).toLocaleString() : booking.price.toLocaleString()})
                 </button>
               </form>
             ) : (
-              <div style={{ textAlign: 'center' }}>
-                <h2 style={{ color: '#2ecc71' }}>✓ Sent!</h2>
-                <p>We'll email you shortly.</p>
+              <div style={{ textAlign: 'center', padding: '20px' }}>
+                <h2 style={{ color: '#2ecc71' }}>✓ Request Sent!</h2>
+                <p>Check your email for details.</p>
               </div>
             )}
           </div>
