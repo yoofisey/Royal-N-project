@@ -11,7 +11,7 @@ app.use(express.json());
 
 // --- CONFIG (Use Environment Variables for Security) ---
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://wkuoslgynuvegmwmdedg.supabase.co";
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY; 
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrdW9zbGd5bnV2ZWdtd21kZWRnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDA4MjY2MSwiZXhwIjoyMDg1NjU4NjYxfQ.7fPEm_fsakfcLNyse-Ij-jyxkvOSx07EpWja602Xnfg"; 
 const EMAIL_USER = process.env.EMAIL_USER || "seyyoofi95@gmail.com";
 const EMAIL_PASS = process.env.EMAIL_PASS || "xxjzetykokkltblj";
 

@@ -55,14 +55,14 @@ export default function App() {
   e.preventDefault();
   const finalPrice = booking.price * (booking.id < 4 ? numNights : 1);
   
-  // payload standardized to match server.js and database
+  // FIX: Standardized keys to match server.js and database snake_case
   const payload = {
-    guestName: e.target.guestName.value,
+    guest_name: e.target.guestName.value, // Changed from guestName
     email: e.target.email.value,
-    roomType: booking.name,
+    room_type: booking.name,             // Changed from roomType
     price: Number(finalPrice),
-    startDate: dates.start,
-    endDate: dates.end
+    start_date: dates.start,            // Changed from startDate
+    end_date: dates.end                 // Changed from endDate
   };
 
   try {
@@ -73,16 +73,24 @@ export default function App() {
     });
 
     if (response.ok) {
+      // This will now trigger because the server will return a 201 Success
       setIsSuccess(true);
-      setTimeout(() => { setBooking(null); setIsSuccess(false); }, 3000);
+      setTimeout(() => { 
+        setBooking(null); 
+        setIsSuccess(false); 
+        // Optional: clear dates
+        setDates({ start: '', end: '' });
+      }, 3000);
     } else {
       const errorData = await response.json();
-      alert(`Booking Error: ${errorData.message || "Unknown error"}`);
+      // Improved error alerting
+      alert(`Booking Error: ${errorData.error || "Server could not process booking"}`);
     }
   } catch (err) {
-    alert("Connection to server failed.");
+    console.error("Fetch error:", err);
+    alert("Connection to server failed. Please check if the backend is running.");
   }
-};
+};}
 
   if (view === 'admin') return <AdminDashboard setView={setView} />;
   if (view === 'login') {
@@ -213,4 +221,3 @@ export default function App() {
       )}
     </div>
   );
-}
