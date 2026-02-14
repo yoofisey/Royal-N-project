@@ -410,3 +410,94 @@ h1, h2, h3, .logo { font-family: 'Playfair Display', serif; }
   color: #666;
   font-size: 0.9rem;
 }
+/* --- FOOTER STYLING --- */
+.main-footer {
+  background: var(--dark); /* Uses the #1a1a1a from your :root */
+  color: #ffffff;
+  padding: 80px 0 40px;
+  margin-top: 50px;
+  border-top: 4px solid var(--royal-gold);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr; /* Gives the brand description more room */
+  gap: 60px;
+  margin-bottom: 50px;
+}
+
+.main-footer h3, .main-footer h4 {
+  font-family: 'Playfair Display', serif;
+  color: var(--royal-gold);
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+.main-footer p {
+  color: #b0b0b0;
+  font-size: 0.95rem;
+  line-height: 1.8;
+}
+
+.main-footer ul {
+  list-style: none;
+  padding: 0;
+}
+
+.main-footer ul li {
+  margin-bottom: 12px;
+}
+
+.main-footer ul li a {
+  color: #b0b0b0;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  display: inline-block;
+}
+
+.main-footer ul li a:hover {
+  color: var(--royal-gold);
+  transform: translateX(5px); /* Subtle slide effect on hover */
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+  color: #666;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* --- RESPONSIVE FOOTER --- */
+@media (max-width: 768px) {
+  .footer-grid {
+    grid-template-columns: 1fr; /* Stacks everything on mobile */
+    gap: 40px;
+    text-align: center;
+  }
+
+  .main-footer ul li a:hover {
+    transform: none; /* Disable slide on mobile for better UX */
+  }
+}
+.footer-logo {
+  height: 60px; /* Slightly larger than the navbar logo */
+  width: auto;
+  margin-bottom: 20px;
+  display: block;
+  border-radius: 4px; /* Optional: rounds the corners of the logo image */
+  
+  /* Optional: If your logo has a white background and you want it to pop less */
+  /* filter: brightness(0.9); */
+}
+
+/* Ensure centering on mobile */
+@media (max-width: 768px) {
+  .footer-logo {
+    margin: 0 auto 20px auto;
+  }
+}
