@@ -56,8 +56,8 @@ app.post("/api/book", async (req, res) => {
       email: email,
       room_type: room_type,
       price: price,
-      start_date: startDate,
-      end_date: endDate,
+      startDate: startDate,
+      endDate: endDate,
       status: "pending",
       paid: false,
     }]).select();
