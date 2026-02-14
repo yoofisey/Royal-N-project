@@ -66,7 +66,43 @@ export default function AdminDashboard({ setView }) {
         <h2>ROYAL 'N' PANEL {isUpdating && <small style={{fontSize:'0.8rem', color:'orange'}}>...Saving</small>}</h2>
         <button onClick={() => setView('guest')} style={{ background: '#333', color: '#fff', padding: '8px 15px', border:'none', cursor:'pointer' }}>Logout</button>
       </nav>
+{/* STATS ROW */}
+<div className="stats-row" style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
+  
+  {/* TOTAL REVENUE CARD */}
+  <div className="stat-card" style={{ 
+    flex: 1, 
+    padding: '20px', 
+    border: '1px solid #eee', 
+    borderRadius: '10px', 
+    background: '#fcfcfc',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.02)' 
+  }}>
+    <h3 style={{ fontSize: '1.5rem', margin: '0 0 10px 0', color: '#27ae60' }}>
+      GH₵ {adminBookings
+        .filter(b => b.paid) // Only count bookings marked as Paid
+        .reduce((sum, b) => sum + (Number(b.price) || 0), 0)
+        .toLocaleString()}
+    </h3>
+    <p style={{ color: '#666', margin: 0, fontWeight: 'bold' }}>Total Paid Revenue</p>
+  </div>
 
+  {/* TOTAL RESERVATIONS CARD */}
+  <div className="stat-card" style={{ 
+    flex: 1, 
+    padding: '20px', 
+    border: '1px solid #eee', 
+    borderRadius: '10px', 
+    background: '#fcfcfc',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+  }}>
+    <h3 style={{ fontSize: '1.5rem', margin: '0 0 10px 0', color: '#333' }}>
+      {adminBookings.length}
+    </h3>
+    <p style={{ color: '#666', margin: 0, fontWeight: 'bold' }}>Total Reservations</p>
+  </div>
+
+</div>
       <h3>Inventory Control</h3>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '30px' }}>
         {roomsDataKeys.map(key => (
