@@ -21,7 +21,7 @@ export default function App() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const [guestName, setGuestName] = useState("");
+  const [guest_name, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
@@ -59,7 +59,7 @@ export default function App() {
     const finalPrice = booking.id < 4 ? booking.price * numNights : booking.price;
 
     const payload = {
-      guest_name: guestName,
+      guest_name: guest_name,
       email: guestEmail,
       room_type: booking.name,
       price: Number(finalPrice),
