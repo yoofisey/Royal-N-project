@@ -54,7 +54,7 @@ app.post("/api/book", async (req, res) => {
     const { data, error } = await supabase.from("bookings").insert([{
       guest_name: guest_name,
       email: email,
-      room_type: roomType,
+      room_type: room_type,
       price: price,
       start_date: startDate,
       end_date: endDate,
