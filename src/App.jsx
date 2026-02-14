@@ -52,47 +52,44 @@ export default function App() {
   }, [dates]);
 
   const handleBookingSubmit = async (e) => {
-  e.preventDefault();
-  const finalPrice = booking.price * (booking.id < 4 ? numNights : 1);
-  
-  // FIX: Standardized keys to match server.js and database snake_case
-  const payload = {
-    guest_name: e.target.guestName.value, // Changed from guestName
-    email: e.target.email.value,
-    room_type: booking.name,             // Changed from roomType
-    price: Number(finalPrice),
-    start_date: dates.start,            // Changed from startDate
-    end_date: dates.end                 // Changed from endDate
-  };
+    e.preventDefault();
+    const finalPrice = booking.price * (booking.id < 4 ? numNights : 1);
+    
+    const payload = {
+      guest_name: e.target.guestName.value,
+      email: e.target.email.value,
+      room_type: booking.name,
+      price: Number(finalPrice),
+      start_date: dates.start,
+      end_date: dates.end
+    };
 
-  try {
-    const response = await fetch(`${API_URL}/api/book`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    try {
+      const response = await fetch(`${API_URL}/api/book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-    if (response.ok) {
-      // This will now trigger because the server will return a 201 Success
-      setIsSuccess(true);
-      setTimeout(() => { 
-        setBooking(null); 
-        setIsSuccess(false); 
-        // Optional: clear dates
-        setDates({ start: '', end: '' });
-      }, 3000);
-    } else {
-      const errorData = await response.json();
-      // Improved error alerting
-      alert(`Booking Error: ${errorData.error || "Server could not process booking"}`);
+      if (response.ok) {
+        setIsSuccess(true);
+        setTimeout(() => { 
+          setBooking(null); 
+          setIsSuccess(false); 
+          setDates({ start: '', end: '' });
+        }, 3000);
+      } else {
+        const errorData = await response.json();
+        alert(`Booking Error: ${errorData.error || "Server could not process booking"}`);
+      }
+    } catch (err) {
+      alert("Connection to server failed.");
     }
-  } catch (err) {
-    console.error("Fetch error:", err);
-    alert("Connection to server failed. Please check if the backend is running.");
-  }
-};
+  }; // <--- Fixed: Function closes here.
 
+  // Logic views must stay inside the App component
   if (view === 'admin') return <AdminDashboard setView={setView} />;
+  
   if (view === 'login') {
     return (
       <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f4f4f4' }}>
@@ -206,7 +203,7 @@ export default function App() {
                   <input type="date" required min={new Date().toISOString().split("T")[0]} onChange={e => setDates({ ...dates, start: e.target.value })} style={{ flex: 1, padding: '5px' }} />
                   <input type="date" required min={dates.start} onChange={e => setDates({ ...dates, end: e.target.value })} style={{ flex: 1, padding: '5px' }} />
                 </div>
-                <button type="submit" style={{ width: '100%', padding: '12px', background: '#333', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+                <button type="submit" className="btn-book" style={{ width: '100%' }}>
                   Confirm (GH₵ {booking.id < 4 ? (booking.price * numNights).toLocaleString() : booking.price.toLocaleString()})
                 </button>
               </form>
@@ -221,3 +218,4 @@ export default function App() {
       )}
     </div>
   );
+}
