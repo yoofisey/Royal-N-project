@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import "./index.css";
+import "/Users/franc/royal-project/hotel-site/src/index.css";
 import AdminDashboard from "./components/adminDashboard";
 
 const API_URL =
