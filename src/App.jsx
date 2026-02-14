@@ -90,7 +90,7 @@ export default function App() {
     console.error("Fetch error:", err);
     alert("Connection to server failed. Please check if the backend is running.");
   }
-};}
+};
 
   if (view === 'admin') return <AdminDashboard setView={setView} />;
   if (view === 'login') {
