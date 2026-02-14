@@ -52,17 +52,23 @@ export default function App() {
   }, [dates]);
 
   const handleBookingSubmit = async (e) => {
-    e.preventDefault();
-    const finalPrice = booking.price * (booking.id < 4 ? numNights : 1);
-    
-    const payload = {
-      guest_name: e.target.guestName.value,
-      email: e.target.email.value,
-      room_type: booking.name,
-      price: Number(finalPrice),
-      start_date: dates.start,
-      end_date: dates.end
-    };
+  e.preventDefault();
+  
+  // Create a FormData object to reliably get the values
+  const formData = new FormData(e.target);
+  const guest_name = formData.get("guestName"); // Must match the name="" attribute in your input
+  const email = formData.get("email");
+
+  const finalPrice = booking.price * (booking.id < 4 ? numNights : 1);
+  
+  const payload = {
+    guest_name: guest_name, // Now it won't be null
+    email: email,
+    room_type: booking.name,
+    price: Number(finalPrice),
+    start_date: dates.start,
+    end_date: dates.end
+  };
 
     try {
       const response = await fetch(`${API_URL}/api/book`, {
