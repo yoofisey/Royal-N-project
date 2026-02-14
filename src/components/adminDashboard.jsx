@@ -76,44 +76,82 @@ export default function AdminDashboard({ setView }) {
         ))}
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead style={{ background: '#f4f4f4' }}>
-            <tr>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Guest</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Dates</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Status</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Paid</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {adminBookings.map(b => (
-              <tr key={b.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '12px' }}>
-                    <strong>{b.guest_name}</strong><br/>{b.room_type}
-                </td>
-                <td style={{ padding: '12px' }}>{b.start_date} to {b.end_date}</td>
-                <td style={{ padding: '12px' }}>
-                  <select value={b.status} onChange={(e) => updateBooking(b.id, {status: e.target.value})}>
-                    <option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
-                </td>
-                <td style={{ padding: '12px' }}>
-                  <button onClick={() => updateBooking(b.id, {paid: !b.paid})} style={{ background: b.paid ? '#2ecc71' : '#e74c3c', color:'#fff', border:'none', borderRadius:'10px', padding:'4px 10px' }}>
-                    {b.paid ? 'Paid' : 'Unpaid'}
-                  </button>
-                </td>
-                <td style={{ padding: '12px' }}>
-                  <button onClick={() => deleteBooking(b.id)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+  <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
+    <thead style={{ background: '#f8f9fa' }}>
+      <tr>
+        <th style={{ padding: '15px', textAlign: 'left', borderBottom: '2px solid #eee' }}>Guest & Room</th>
+        <th style={{ padding: '15px', textAlign: 'left', borderBottom: '2px solid #eee' }}>Check-In</th>
+        <th style={{ padding: '15px', textAlign: 'left', borderBottom: '2px solid #eee' }}>Check-Out</th>
+        <th style={{ padding: '15px', textAlign: 'left', borderBottom: '2px solid #eee' }}>Price</th>
+        <th style={{ padding: '15px', textAlign: 'left', borderBottom: '2px solid #eee' }}>Status</th>
+        <th style={{ padding: '15px', textAlign: 'left', borderBottom: '2px solid #eee' }}>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {adminBookings.map(b => (
+        <tr key={b.id} style={{ borderBottom: '1px solid #eee' }}>
+          <td style={{ padding: '15px' }}>
+            <strong style={{ fontSize: '1rem', color: '#333' }}>{b.guest_name}</strong><br/>
+            <small style={{ color: '#c19d68', fontWeight: 'bold' }}>{b.room_type.toUpperCase()}</small>
+          </td>
+          
+          {/* START DATE */}
+          <td style={{ padding: '15px', color: '#555' }}>
+            <div style={{ fontWeight: 'bold' }}>{new Date(b.start_date).toLocaleDateString('en-GB')}</div>
+            <small style={{ color: '#888' }}>Arrival</small>
+          </td>
+
+          {/* END DATE */}
+          <td style={{ padding: '15px', color: '#555' }}>
+            <div style={{ fontWeight: 'bold' }}>{new Date(b.end_date).toLocaleDateString('en-GB')}</div>
+            <small style={{ color: '#888' }}>Departure</small>
+          </td>
+
+          <td style={{ padding: '15px', fontWeight: 'bold', color: '#27ae60' }}>
+            GH₵ {Number(b.price).toLocaleString()}
+          </td>
+
+          <td style={{ padding: '15px' }}>
+            <select 
+              value={b.status || 'pending'} 
+              onChange={(e) => updateBooking(b.id, { status: e.target.value })} 
+              style={{ padding: '6px', borderRadius: '4px', border: '1px solid #ddd' }}
+            >
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <button 
+              onClick={() => updateBooking(b.id, { paid: !b.paid })} 
+              style={{ 
+                marginLeft: '10px',
+                padding: '6px 10px', 
+                borderRadius: '15px', 
+                border: 'none', 
+                background: b.paid ? '#2ecc71' : '#e74c3c', 
+                color: 'white',
+                fontSize: '0.75rem',
+                cursor: 'pointer'
+              }}
+            >
+              {b.paid ? 'Paid' : 'Unpaid'}
+            </button>
+          </td>
+
+          <td style={{ padding: '15px' }}>
+            <button 
+              onClick={() => deleteBooking(b.id)} 
+              style={{ color: '#ff4d4d', background: 'none', border: '1px solid #ff4d4d', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
     </div>
   );
 }
