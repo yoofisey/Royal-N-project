@@ -276,3 +276,137 @@ h1, h2, h3, .logo { font-family: 'Playfair Display', serif; }
     grid-template-columns: 1fr;
   }
 }
+/* --- LOGO & LAYOUT FIXES --- */
+
+/* Tames the logo in the Navbar */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo img {
+  height: 45px; /* Adjust this to make it smaller/larger */
+  width: auto;
+  object-fit: contain;
+}
+
+/* Tames the logo in the Staff Portal (Login) */
+.login-card img {
+  width: 100px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+/* --- SECTION & GRID UTILITIES --- */
+/* These match the classes in the new App.jsx */
+
+.section {
+  padding: 80px 0;
+}
+
+.section.light {
+  background: #ffffff;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 50px;
+  font-size: 2.5rem;
+  color: var(--dark);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+}
+
+/* --- CARD & OVERLAY REFINEMENTS --- */
+
+.card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  overflow: hidden;
+  transition: 0.3s;
+}
+
+.card-image {
+  height: 250px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.card-body {
+  padding: 25px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.price-tag {
+  font-weight: 700;
+  color: var(--royal-gold);
+  font-size: 1.1rem;
+}
+
+/* --- STAFF PORTAL STYLING --- */
+
+.login-wrapper {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--light-gray);
+}
+
+.login-card {
+  background: white;
+  padding: 40px;
+  border-radius: 15px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.login-card input {
+  width: 100%;
+  padding: 12px;
+  margin: 15px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.error-input {
+  border-color: #ff4d4d !important;
+  background: #fff8f8;
+}
+
+.link-text {
+  margin-top: 20px;
+  cursor: pointer;
+  text-decoration: underline;
+  color: #666;
+  font-size: 0.9rem;
+}
