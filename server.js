@@ -48,13 +48,13 @@ app.get("/api/availability", async (_, res) => {
 
 // Create Booking
 app.post("/api/book", async (req, res) => {
-  const { guest_name, email, roomType, price, startDate, endDate } = req.body;
+  const { guest_name, email, room_type, price, startDate, endDate } = req.body;
 
   try {
     const { data, error } = await supabase.from("bookings").insert([{
       guest_name: guest_name,
       email: email,
-      room_type: room_type,
+      room_type: roomType,
       price: price,
       start_date: startDate,
       end_date: endDate,
@@ -93,8 +93,8 @@ app.patch("/api/bookings/:id", async (req, res) => {
 });
 
 app.patch("/api/availability", async (req, res) => {
-  const { roomType, status } = req.body;
-  const { error } = await supabase.from("availability").upsert({ room_type: roomType, status });
+  const { room_type, status } = req.body;
+  const { error } = await supabase.from("availability").upsert({ room_type, status });
   if (error) return res.status(500).json({ error: error.message });
   res.json({ message: "Updated" });
 });
