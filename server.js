@@ -48,11 +48,11 @@ app.get("/api/availability", async (_, res) => {
 
 // Create Booking
 app.post("/api/book", async (req, res) => {
-  const { guestName, email, roomType, price, startDate, endDate } = req.body;
+  const { guest_name, email, roomType, price, startDate, endDate } = req.body;
 
   try {
     const { data, error } = await supabase.from("bookings").insert([{
-      guest_name: guestName,
+      guest_name: guest_name,
       email: email,
       room_type: roomType,
       price: price,
