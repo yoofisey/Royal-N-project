@@ -184,6 +184,8 @@ export default function App() {
       {/* FOOTER ADDED HERE */}
       <footer className="main-footer">
         <div className="container footer-grid">
+                    <img src="/logo2.jpeg" alt="Logo" />
+
           <div>
             <h3 style={{color: 'var(--royal-gold)', marginBottom: '15px'}}>ROYAL 'N' HOTEL</h3>
             <p>Redefining luxury and comfort for the modern traveler. Experience excellence in hospitality.</p>
