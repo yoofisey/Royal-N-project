@@ -111,6 +111,56 @@ h1, h2, h3, .logo { font-family: 'Playfair Display', serif; }
 .btn-primary, .btn-book { 
   transition: all var(--transition-speed) ease-in-out;
 }
+/* Premium Booking Button Styling */
+.btn-book {
+  background: linear-gradient(135deg, #c19d68 0%, #a67c52 100%);
+  color: white;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 50px; /* Rounded pill shape */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(193, 157, 104, 0.3);
+  display: inline-block;
+  outline: none;
+}
+
+.btn-book:hover:not(:disabled) {
+  transform: translateY(-3px); /* Lifts the button */
+  box-shadow: 0 6px 20px rgba(193, 157, 104, 0.5);
+  background: linear-gradient(135deg, #a67c52 0%, #c19d68 100%);
+}
+
+.btn-book:active:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn-book:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.7;
+}
+
+/* Enquire Button (Specific style if you want it slightly different) */
+.btn-enquire {
+  background: transparent;
+  border: 2px solid #c19d68;
+  color: #c19d68;
+  padding: 10px 22px;
+  border-radius: 50px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.btn-enquire:hover:not(:disabled) {
+  background: #c19d68;
+  color: white;
+}
 
 .btn-primary:hover, .btn-book:hover {
   transform: scale(1.05);
