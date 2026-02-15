@@ -1,36 +1,38 @@
-import express from 'express';
-import cors from 'cors';
-import 'dotenv/config';
+import supabase from '../config/db.js';
 
-const supabase = require('../config/db');
-
-// Toggle Availability
-exports.toggleAvailability = async (req, res) => {
-  const { room_key, is_available } = req.body;
+export const getAllBookings = async (req, res) => {
   try {
     const { data, error } = await supabase
-      .from('availability')
-      .update({ is_available })
-      .eq('room_key', room_key);
-
+      .from('bookings')
+      .select('*')
+      .order('created_at', { ascending: false });
     if (error) throw error;
-    res.json({ success: true, message: `Status updated for ${room_key}` });
+    res.json(data);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Mark as Paid and Update Revenue logic
-exports.markAsPaid = async (req, res) => {
+export const markAsPaid = async (req, res) => {
   const { id } = req.params;
+  const { paid, status } = req.body;
   try {
     const { data, error } = await supabase
       .from('bookings')
-      .update({ status: 'paid' })
+      .update({ paid, status })
       .eq('id', id);
-
     if (error) throw error;
-    res.json({ success: true, message: "Payment confirmed. Revenue updated." });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteBooking = async (req, res) => {
+  try {
+    const { error } = await supabase.from('bookings').delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

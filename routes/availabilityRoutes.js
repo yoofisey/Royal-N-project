@@ -1,12 +1,9 @@
 import express from 'express';
-import cors from 'cors';
-import 'dotenv/config';
-
-const express = require('express');
 const router = express.Router();
-const availController = require('../controllers/availabilityController');
+import { getAvailability, toggleRoom } from '../controllers/availabilityController.js';
+import adminAuth from '../middleware/auth.js';
 
-router.get('/', availController.getAvailability);
-router.patch('/toggle', availController.toggleRoom);
+router.get('/', getAvailability);
+router.patch('/toggle', adminAuth, toggleRoom); // Protected toggle
 
-module.exports = router;
+export default router;
