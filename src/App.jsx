@@ -7,7 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL ?? "https://royal-n-api-1.onrender.
 const roomsData = [
   { id: 1, key: "standard", name: "The Essential Stay", price: 450, package: "Perfect for the solo traveler. Includes High-Speed Fiber WiFi and Gourmet Breakfast.", img: "/standard.jpg" },
   { id: 2, key: "deluxe", name: "The Royal Experience", price: 550, package: "Elevate your visit. Includes All-Day Pool & Gym access and a Welcome Drink.", img: "/deluxe.jpg" },
-  { id: 3, key: "executive", name: "The Executive Retreat", price: 650, package: "Luxury without compromise. Includes Private Balcony and Late Check-out.", img: "/executive.jpg" },
+  { id: 3, key: "executive", name: "The Executive Retreat", price: 650, package: "Experience comfort and convenience with complimentary Wi-Fi, exclusive access to our pool and gym facilities, and daily breakfast for two guests.", img: "/executive.jpg" },
 ];
 
 const eventsData = [
