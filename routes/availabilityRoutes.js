@@ -1,3 +1,7 @@
+import express from 'express';
+import cors from 'cors';
+import 'dotenv/config';
+
 const express = require('express');
 const router = express.Router();
 const availController = require('../controllers/availabilityController');

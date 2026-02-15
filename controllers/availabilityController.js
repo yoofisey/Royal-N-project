@@ -1,3 +1,7 @@
+import express from 'express';
+import cors from 'cors';
+import 'dotenv/config';
+
 const supabase = require('../config/db');
 
 // Get current status of all rooms
