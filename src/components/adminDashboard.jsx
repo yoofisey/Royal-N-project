@@ -20,7 +20,7 @@ export default function AdminDashboard({ setView }) {
       if (Array.isArray(bData)) setAdminBookings(bData);
 
       // 2. Fetch Availability (Public/Internal Route)
-      const aRes = await fetch(`${API_URL}/api/availability`);
+      const aRes = await fetch(`${API_URL}/api/availability/`);
       const aData = await aRes.json();
       setAvailability(aData);
     } catch (err) { 

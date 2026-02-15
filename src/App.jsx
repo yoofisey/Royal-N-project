@@ -32,7 +32,7 @@ export default function App() {
   useEffect(() => {
     const fetchAvail = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/availability`);
+        const res = await fetch(`${API_URL}/api/availability/`);
         if (res.ok) {
           const data = await res.json();
           setAvailability(data);
@@ -68,7 +68,7 @@ export default function App() {
     };
 
     try {
-      const response = await fetch(`${API_URL}/api/book`, {
+      const response = await fetch(`${API_URL}/api/bookings/book/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
