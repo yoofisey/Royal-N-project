@@ -11,7 +11,7 @@ app.use(express.json());
 
 // --- CONFIG (Use Environment Variables for Security) ---
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://wkuoslgynuvegmwmdedg.supabase.co";
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY; 
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrdW9zbGd5bnV2ZWdtd21kZWRnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDA4MjY2MSwiZXhwIjoyMDg1NjU4NjYxfQ.7fPEm_fsakfcLNyse-Ij-jyxkvOSx07EpWja602Xnfg"; 
 const EMAIL_USER = process.env.EMAIL_USER || "seyyoofi95@gmail.com";
 const EMAIL_PASS = process.env.EMAIL_PASS || "xxjzetykokkltblj";
 
@@ -48,16 +48,16 @@ app.get("/api/availability", async (_, res) => {
 
 // Create Booking
 app.post("/api/book", async (req, res) => {
-  const { guestName, email, roomType, price, startDate, endDate } = req.body;
+  const { guest_name, email, room_type, price, start_date, end_date } = req.body;
 
   try {
     const { data, error } = await supabase.from("bookings").insert([{
-      guest_name: guestName,
+      guest_name: guest_name,
       email: email,
-      room_type: roomType,
+      room_type: room_type,
       price: price,
-      start_date: startDate,
-      end_date: endDate,
+      start_date: start_date,
+      end_date: end_date,
       status: "pending",
       paid: false,
     }]).select();
@@ -68,7 +68,7 @@ app.post("/api/book", async (req, res) => {
       from: `"Royal N Hotel" <${EMAIL_USER}>`,
       to: email,
       subject: "Booking Received - Royal N Hotel",
-      html: `<p>Hello ${guestName}, your request for ${roomType} is pending confirmation.</p>`,
+      html: `<p>Hello ${guest_name}, your request for ${room_type} is pending confirmation.</p>`,
     });
 
     res.status(201).json(data[0]);
@@ -93,8 +93,8 @@ app.patch("/api/bookings/:id", async (req, res) => {
 });
 
 app.patch("/api/availability", async (req, res) => {
-  const { roomType, status } = req.body;
-  const { error } = await supabase.from("availability").upsert({ room_type: roomType, status });
+  const { room_type, status } = req.body;
+  const { error } = await supabase.from("availability").upsert({ room_type, status });
   if (error) return res.status(500).json({ error: error.message });
   res.json({ message: "Updated" });
 });

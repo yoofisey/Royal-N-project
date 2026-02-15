@@ -111,6 +111,56 @@ h1, h2, h3, .logo { font-family: 'Playfair Display', serif; }
 .btn-primary, .btn-book { 
   transition: all var(--transition-speed) ease-in-out;
 }
+/* Premium Booking Button Styling */
+.btn-book {
+  background: linear-gradient(135deg, #c19d68 0%, #a67c52 100%);
+  color: white;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 50px; /* Rounded pill shape */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(193, 157, 104, 0.3);
+  display: inline-block;
+  outline: none;
+}
+
+.btn-book:hover:not(:disabled) {
+  transform: translateY(-3px); /* Lifts the button */
+  box-shadow: 0 6px 20px rgba(193, 157, 104, 0.5);
+  background: linear-gradient(135deg, #a67c52 0%, #c19d68 100%);
+}
+
+.btn-book:active:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn-book:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.7;
+}
+
+/* Enquire Button (Specific style if you want it slightly different) */
+.btn-enquire {
+  background: transparent;
+  border: 2px solid #c19d68;
+  color: #c19d68;
+  padding: 10px 22px;
+  border-radius: 50px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.btn-enquire:hover:not(:disabled) {
+  background: #c19d68;
+  color: white;
+}
 
 .btn-primary:hover, .btn-book:hover {
   transform: scale(1.05);
@@ -224,5 +274,230 @@ h1, h2, h3, .logo { font-family: 'Playfair Display', serif; }
 
   .stats-row {
     grid-template-columns: 1fr;
+  }
+}
+/* --- LOGO & LAYOUT FIXES --- */
+
+/* Tames the logo in the Navbar */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo img {
+  height: 45px; /* Adjust this to make it smaller/larger */
+  width: auto;
+  object-fit: contain;
+}
+
+/* Tames the logo in the Staff Portal (Login) */
+.login-card img {
+  width: 100px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+/* --- SECTION & GRID UTILITIES --- */
+/* These match the classes in the new App.jsx */
+
+.section {
+  padding: 80px 0;
+}
+
+.section.light {
+  background: #ffffff;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 50px;
+  font-size: 2.5rem;
+  color: var(--dark);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+}
+
+/* --- CARD & OVERLAY REFINEMENTS --- */
+
+.card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  overflow: hidden;
+  transition: 0.3s;
+}
+
+.card-image {
+  height: 250px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.card-body {
+  padding: 25px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.price-tag {
+  font-weight: 700;
+  color: var(--royal-gold);
+  font-size: 1.1rem;
+}
+
+/* --- STAFF PORTAL STYLING --- */
+
+.login-wrapper {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--light-gray);
+}
+
+.login-card {
+  background: white;
+  padding: 40px;
+  border-radius: 15px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.login-card input {
+  width: 100%;
+  padding: 12px;
+  margin: 15px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.error-input {
+  border-color: #ff4d4d !important;
+  background: #fff8f8;
+}
+
+.link-text {
+  margin-top: 20px;
+  cursor: pointer;
+  text-decoration: underline;
+  color: #666;
+  font-size: 0.9rem;
+}
+/* --- FOOTER STYLING --- */
+.main-footer {
+  background: var(--dark); /* Uses the #1a1a1a from your :root */
+  color: #ffffff;
+  padding: 80px 0 40px;
+  margin-top: 50px;
+  border-top: 4px solid var(--royal-gold);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr; /* Gives the brand description more room */
+  gap: 60px;
+  margin-bottom: 50px;
+}
+
+.main-footer h3, .main-footer h4 {
+  font-family: 'Playfair Display', serif;
+  color: var(--royal-gold);
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+.main-footer p {
+  color: #b0b0b0;
+  font-size: 0.95rem;
+  line-height: 1.8;
+}
+
+.main-footer ul {
+  list-style: none;
+  padding: 0;
+}
+
+.main-footer ul li {
+  margin-bottom: 12px;
+}
+
+.main-footer ul li a {
+  color: #b0b0b0;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  display: inline-block;
+}
+
+.main-footer ul li a:hover {
+  color: var(--royal-gold);
+  transform: translateX(5px); /* Subtle slide effect on hover */
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+  color: #666;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* --- RESPONSIVE FOOTER --- */
+@media (max-width: 768px) {
+  .footer-grid {
+    grid-template-columns: 1fr; /* Stacks everything on mobile */
+    gap: 40px;
+    text-align: center;
+  }
+
+  .main-footer ul li a:hover {
+    transform: none; /* Disable slide on mobile for better UX */
+  }
+}
+.footer-logo {
+  height: 60px; /* Slightly larger than the navbar logo */
+  width: auto;
+  margin-bottom: 20px;
+  display: block;
+  border-radius: 4px; /* Optional: rounds the corners of the logo image */
+  
+  /* Optional: If your logo has a white background and you want it to pop less */
+  /* filter: brightness(0.9); */
+}
+
+/* Ensure centering on mobile */
+@media (max-width: 768px) {
+  .footer-logo {
+    margin: 0 auto 20px auto;
   }
 }
