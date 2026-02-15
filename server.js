@@ -68,7 +68,7 @@ app.post("/api/book", async (req, res) => {
       from: `"Royal N Hotel" <${EMAIL_USER}>`,
       to: email,
       subject: "Booking Received - Royal N Hotel",
-      html: `<p>Hello ${guestName}, your request for ${roomType} is pending confirmation.</p>`,
+      html: `<p>Hello ${guest_name}, your request for ${room_type} is pending confirmation.</p>`,
     });
 
     res.status(201).json(data[0]);
