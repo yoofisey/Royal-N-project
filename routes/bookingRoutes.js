@@ -1,11 +1,8 @@
 import express from 'express';
-import cors from 'cors';
-import 'dotenv/config';
-
-const express = require('express');
 const router = express.Router();
-const bookingController = require('../controllers/bookingController');
+import { createBooking } from '../controllers/bookingController.js';
 
-router.post('/book', bookingController.createBooking);
+// Public route for guests to book
+router.post('/book', createBooking);
 
-module.exports = router;
+export default router;
