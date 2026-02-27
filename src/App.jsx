@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import "./index.css";
 import AdminDashboard from "./components/adminDashboard";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "https://royal-n-api-1.onrender.com";
+// Fix #1: No more hardcoded localhost — reads from your .env file
+const API_URL = import.meta.env.VITE_API_URL || "https://royal-n-api-1.onrender.com";
 
 const roomsData = [
   { id: 1, key: "standard", name: "The Essential Stay", price: 450, package: "Perfect for the solo traveler. Includes High-Speed Fiber WiFi and Gourmet Breakfast.", img: "/standard.jpg" },
@@ -20,7 +21,7 @@ export default function App() {
   const [booking, setBooking] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
@@ -32,12 +33,12 @@ export default function App() {
   useEffect(() => {
     const fetchAvail = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/availability`);
+        const res = await fetch(`${API_URL}/api/availability/`);
         if (res.ok) {
           const data = await res.json();
           setAvailability(data);
         }
-      } catch (err) { console.error("Sync Error:", err); }
+      } catch (err) { console.error("Availability fetch error:", err); }
     };
     fetchAvail();
   }, []);
@@ -56,7 +57,8 @@ export default function App() {
     if (!booking || isSubmitting) return;
 
     setIsSubmitting(true);
-    const finalPrice = booking.id < 4 ? booking.price * numNights : booking.price;
+    const isEvent = booking.id >= 4;
+    const finalPrice = isEvent ? booking.price : booking.price * numNights;
 
     const payload = {
       guest_name: guestName,
@@ -68,7 +70,7 @@ export default function App() {
     };
 
     try {
-      const response = await fetch(`${API_URL}/api/book`, {
+      const response = await fetch(`${API_URL}/api/bookings/book/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -76,7 +78,7 @@ export default function App() {
 
       if (response.ok) {
         setIsSuccess(true);
-        setGuestName(""); 
+        setGuestName("");
         setGuestEmail("");
         setTimeout(() => {
           setBooking(null);
@@ -88,7 +90,7 @@ export default function App() {
         alert(`Error: ${errorData.error || "Please try again."}`);
       }
     } catch (err) {
-      alert("Server connection lost.");
+      alert("Server connection lost. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -101,18 +103,27 @@ export default function App() {
       <div className="login-wrapper">
         <form className="login-card" onSubmit={(e) => {
           e.preventDefault();
-          if (adminPassword === "admin123") setView("admin");
+          if (adminPassword === "admin123") { setView("admin"); setLoginError(false); }
           else setLoginError(true);
         }}>
           <img src="/logo2.jpeg" alt="Logo" />
           <h3>Staff Portal</h3>
-          <input type="password" placeholder="Password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} className={loginError ? "error-input" : ""} />
+          <input
+            type="password"
+            placeholder="Password"
+            value={adminPassword}
+            onChange={(e) => { setAdminPassword(e.target.value); setLoginError(false); }}
+            className={loginError ? "error-input" : ""}
+          />
+          {loginError && <p style={{ color: '#ff4d4d', fontSize: '0.85rem', marginTop: '-10px' }}>Incorrect password</p>}
           <button type="submit" className="btn-book">Login</button>
           <p className="link-text" onClick={() => setView("guest")}>Return Home</p>
         </form>
       </div>
     );
   }
+
+  const isEvent = booking && booking.id >= 4;
 
   return (
     <div className="main-wrapper">
@@ -125,7 +136,7 @@ export default function App() {
           <ul className="nav-links">
             <li><a href="#rooms">Rooms</a></li>
             <li><a href="#events">Events</a></li>
-            <li><a onClick={() => setView("login")} style={{cursor: 'pointer'}}>Staff</a></li>
+            <li><a onClick={() => setView("login")} style={{ cursor: 'pointer' }}>Staff</a></li>
           </ul>
         </div>
       </nav>
@@ -181,33 +192,30 @@ export default function App() {
         </div>
       </section>
 
-      {/* FOOTER ADDED HERE */}
       <footer className="main-footer">
         <div className="container footer-grid">
-<div>
-  {/* Footer Logo Added Here */}
-  <img src="/logo2.jpeg" alt="Royal N Hotel Logo" className="footer-logo" />
-  <h3 style={{color: 'var(--royal-gold)', marginBottom: '15px'}}>ROYAL 'N' HOTEL</h3>
-  <p>Redefining luxury and comfort for the modern traveler. Experience excellence in hospitality.</p>
-</div>
           <div>
+            <img src="/logo2.jpeg" alt="Royal N Hotel Logo" className="footer-logo" />
+            <h3 style={{ color: 'var(--royal-gold)', marginBottom: '15px' }}>ROYAL 'N' HOTEL</h3>
+            <p>Redefining luxury and comfort for the modern traveler. Experience excellence in hospitality.</p>
           </div>
+          <div></div>
           <div>
             <h4>Quick Links</h4>
-            <ul style={{listStyle: 'none', marginTop: '10px'}}>
+            <ul style={{ listStyle: 'none', marginTop: '10px' }}>
               <li><a href="#rooms">Our Rooms</a></li>
               <li><a href="#events">Event Spaces</a></li>
-              <li onClick={() => setView("login")} style={{cursor: 'pointer', color: '#ccc'}}>Staff Portal</li>
+              <li onClick={() => setView("login")} style={{ cursor: 'pointer', color: '#ccc' }}>Staff Portal</li>
             </ul>
           </div>
           <div>
             <h4>Contact Us</h4>
-            <p style={{marginTop: '10px'}}>📍 123 Luxury Lane, Accra, Ghana</p>
+            <p style={{ marginTop: '10px' }}>📍 123 Luxury Lane, Accra, Ghana</p>
             <p>📞 +233 (0)553696197</p>
             <p>✉️ royalnhotel3@gmail.com</p>
           </div>
         </div>
-        <div className="container" style={{textAlign: 'center', marginTop: '40px', paddingTop: '20px', borderTop: '1px solid #333', fontSize: '0.8rem', color: '#888'}}>
+        <div className="container" style={{ textAlign: 'center', marginTop: '40px', paddingTop: '20px', borderTop: '1px solid #333', fontSize: '0.8rem', color: '#888' }}>
           &copy; {new Date().getFullYear()} Royal 'N' Hotel. All Rights Reserved.
         </div>
       </footer>
@@ -217,20 +225,69 @@ export default function App() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             {!isSuccess ? (
               <form className="booking-form" onSubmit={handleBookingSubmit}>
-                <h3 style={{fontFamily: 'Playfair Display', marginBottom: '15px'}}>Reserve {booking.name}</h3>
-                <input placeholder="Full Name" value={guestName} onChange={(e) => setGuestName(e.target.value)} required />
-                <input type="email" placeholder="Email Address" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} required />
+                <h3 style={{ fontFamily: 'Playfair Display', marginBottom: '15px' }}>
+                  {isEvent ? "Enquire: " : "Reserve: "}{booking.name}
+                </h3>
+                <input
+                  placeholder="Full Name"
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  required
+                />
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  value={guestEmail}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  required
+                />
                 <div className="date-row">
-                  <input type="date" value={dates.start} required min={new Date().toISOString().split("T")[0]} onChange={(e) => setDates({ ...dates, start: e.target.value })} />
-                  <input type="date" value={dates.end} required min={dates.start} onChange={(e) => setDates({ ...dates, end: e.target.value })} />
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '4px' }}>
+                      {isEvent ? "Event Date" : "Check-In"}
+                    </label>
+                    <input
+                      type="date"
+                      value={dates.start}
+                      required
+                      min={new Date().toISOString().split("T")[0]}
+                      onChange={(e) => setDates({ ...dates, start: e.target.value })}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '4px' }}>
+                      {isEvent ? "End Date" : "Check-Out"}
+                    </label>
+                    <input
+                      type="date"
+                      value={dates.end}
+                      required
+                      min={dates.start || new Date().toISOString().split("T")[0]}
+                      onChange={(e) => setDates({ ...dates, end: e.target.value })}
+                    />
+                  </div>
                 </div>
-                <button type="submit" className="btn-book" style={{width: '100%'}} disabled={isSubmitting}>
-                  {isSubmitting ? "Processing..." : `Confirm GH₵ ${(booking.id < 4 ? booking.price * numNights : booking.price).toLocaleString()}`}
+                {!isEvent && numNights > 0 && (
+                  <p style={{ fontSize: '0.8rem', color: '#888', margin: '5px 0' }}>
+                    {numNights} night{numNights > 1 ? 's' : ''}
+                  </p>
+                )}
+                <button
+                  type="submit"
+                  className="btn-book"
+                  style={{ width: '100%', marginTop: '10px' }}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting
+                    ? "Processing..."
+                    : `Confirm — GH₵ ${(isEvent ? booking.price : booking.price * numNights).toLocaleString()}`
+                  }
                 </button>
               </form>
             ) : (
-              <div className="success-message" style={{textAlign: 'center'}}>
-                <h2 style={{color: 'var(--royal-gold)'}}>✓ Request Sent!</h2>
+              <div className="success-message" style={{ textAlign: 'center', padding: '20px 0' }}>
+                <h2 style={{ color: 'var(--royal-gold)', fontSize: '2rem' }}>✓</h2>
+                <h3 style={{ color: 'var(--royal-gold)', marginBottom: '10px' }}>Request Sent!</h3>
                 <p>Check your email for confirmation.</p>
               </div>
             )}
