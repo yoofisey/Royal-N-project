@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || "https://royal-n-api-1.onrender.com";
 const roomsDataKeys = ['standard', 'deluxe', 'executive', 'hall', 'grounds'];
@@ -9,7 +8,7 @@ export default function AdminDashboard() {  // remove setView prop
   const navigate = useNavigate();
     const [adminBookings, setAdminBookings] = useState([]);
   const [availability, setAvailability] = useState({});
-  const [togglingKey, setTogglingKey] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -28,6 +27,7 @@ export default function AdminDashboard() {  // remove setView prop
     }
   }, []);
 
+  // Stable polling — no dependency on isUpdating so interval never resets
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 5000);
@@ -46,19 +46,14 @@ export default function AdminDashboard() {  // remove setView prop
         },
         body: JSON.stringify(updates)
       });
-
-      if (!res.ok) throw new Error("Update failed on server");
     } catch (err) {
-      console.error("Update failed, rolling back:", err);
-      fetchData();
+      console.error("Update failed", err);
     }
   };
 
   const toggleStatus = async (key) => {
-    if (togglingKey) return;
-
+    setIsUpdating(true);
     const newStatus = !availability[key];
-    setTogglingKey(key);
     setAvailability(prev => ({ ...prev, [key]: newStatus }));
 
     try {
@@ -70,17 +65,8 @@ export default function AdminDashboard() {  // remove setView prop
         },
         body: JSON.stringify({ room_key: key, is_available: newStatus })
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Server rejected the update");
-      }
-
-      console.log(`✅ ${key} → ${newStatus ? 'Available' : 'Full'}`);
     } catch (err) {
-      console.error("Toggle failed, rolling back:", err);
-      setAvailability(prev => ({ ...prev, [key]: !newStatus }));
-      alert(`Failed to update ${key}: ${err.message}`);
+      console.error("Toggle failed", err);
     } finally {
       setTogglingKey(null);
     }
@@ -89,25 +75,18 @@ export default function AdminDashboard() {  // remove setView prop
   const deleteBooking = async (id) => {
     if (!window.confirm("Delete permanently?")) return;
     setAdminBookings(prev => prev.filter(b => b.id !== id));
-
-    try {
-      await fetch(`${API_URL}/api/admin/bookings/${id}`, {
-        method: 'DELETE',
-        headers: ADMIN_AUTH_HEADER
-      });
-    } catch (err) {
-      console.error("Delete failed:", err);
-      fetchData();
-    }
+    
+    await fetch(`${API_URL}/api/admin/bookings/${id}`, { 
+      method: 'DELETE',
+      headers: ADMIN_AUTH_HEADER
+    });
   };
 
   return (
     <div className="admin-container" style={{ padding: '20px', background: '#fff', minHeight: '100vh' }}>
       <nav style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #eee', paddingBottom: '10px', marginBottom: '20px' }}>
-        <h2 style={{ fontFamily: 'Playfair Display, serif' }}>ROYAL 'N' PANEL</h2>
-        <button onClick={() => navigate('/')} style={{ background: '#333', color: '#fff', padding: '8px 15px', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
-  Logout
-</button>
+        <h2 style={{fontFamily: 'Playfair Display, serif'}}>ROYAL 'N' PANEL {isUpdating && <small style={{fontSize:'0.8rem', color:'orange'}}>...Saving</small>}</h2>
+        <button onClick={() => setView('guest')} style={{ background: '#333', color: '#fff', padding: '8px 15px', border:'none', cursor:'pointer', borderRadius: '4px' }}>Logout</button>
       </nav>
 
       {/* Stats */}

@@ -3,7 +3,7 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 import "./index.css";
 import AdminDashboard from "./components/adminDashboard";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://royal-n-api-1.onrender.com";
+const API_URL = import.meta.env.VITE_API_URL ?? "https://royal-n-api-1.onrender.com";
 
 const roomsData = [
   { id: 1, key: "standard", name: "The Essential Stay", price: 450, package: "Perfect for the solo traveler. Includes High-Speed Fiber WiFi and Gourmet Breakfast.", img: "/standard.jpg" },
@@ -20,6 +20,7 @@ export default function App() {
   const [booking, setBooking] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
@@ -96,30 +97,25 @@ export default function App() {
     }
   };
 
-  const LoginPage = () => (
-    <div className="login-wrapper">
-      <form className="login-card" onSubmit={(e) => {
-        e.preventDefault();
-        if (adminPassword === "admin123") { navigate("/admin"); setLoginError(false); }
-        else setLoginError(true);
-      }}>
-        <img src="/logo2.jpeg" alt="Logo" />
-        <h3>Staff Portal</h3>
-        <input
-          type="password"
-          placeholder="Password"
-          value={adminPassword}
-          onChange={(e) => { setAdminPassword(e.target.value); setLoginError(false); }}
-          className={loginError ? "error-input" : ""}
-        />
-        {loginError && <p style={{ color: '#ff4d4d', fontSize: '0.85rem', marginTop: '-10px' }}>Incorrect password</p>}
-        <button type="submit" className="btn-book">Login</button>
-        <p className="link-text" onClick={() => navigate("/")}>Return Home</p>
-      </form>
-    </div>
-  );
+  if (view === "admin") return <AdminDashboard setView={setView} />;
 
-  const isEvent = booking && booking.id >= 4;
+  if (view === "login") {
+    return (
+      <div className="login-wrapper">
+        <form className="login-card" onSubmit={(e) => {
+          e.preventDefault();
+          if (adminPassword === "admin123") setView("admin");
+          else setLoginError(true);
+        }}>
+          <img src="/logo2.jpeg" alt="Logo" />
+          <h3>Staff Portal</h3>
+          <input type="password" placeholder="Password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} className={loginError ? "error-input" : ""} />
+          <button type="submit" className="btn-book">Login</button>
+          <p className="link-text" onClick={() => setView("guest")}>Return Home</p>
+        </form>
+      </div>
+    );
+  }
 
   const GuestPage = () => (
     <div className="main-wrapper">
@@ -132,7 +128,7 @@ export default function App() {
           <ul className="nav-links">
             <li><a href="#rooms">Rooms</a></li>
             <li><a href="#events">Events</a></li>
-            <li><a onClick={() => navigate("/login")} style={{ cursor: 'pointer' }}>Staff</a></li>
+            <li><a onClick={() => setView("login")} style={{cursor: 'pointer'}}>Staff</a></li>
           </ul>
         </div>
       </nav>
@@ -201,7 +197,7 @@ export default function App() {
             <ul style={{ listStyle: 'none', marginTop: '10px' }}>
               <li><a href="#rooms">Our Rooms</a></li>
               <li><a href="#events">Event Spaces</a></li>
-              <li onClick={() => navigate("/login")} style={{ cursor: 'pointer', color: '#ccc' }}>Staff Portal</li>
+              <li onClick={() => setView("login")} style={{cursor: 'pointer', color: '#ccc'}}>Staff Portal</li>
             </ul>
           </div>
           <div>
@@ -221,30 +217,15 @@ export default function App() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             {!isSuccess ? (
               <form className="booking-form" onSubmit={handleBookingSubmit}>
-                <h3 style={{ fontFamily: 'Playfair Display', marginBottom: '15px' }}>
-                  {isEvent ? "Enquire: " : "Reserve: "}{booking.name}
-                </h3>
+                <h3 style={{fontFamily: 'Playfair Display', marginBottom: '15px'}}>Reserve {booking.name}</h3>
                 <input placeholder="Full Name" value={guestName} onChange={(e) => setGuestName(e.target.value)} required />
                 <input type="email" placeholder="Email Address" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} required />
                 <div className="date-row">
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '4px' }}>
-                      {isEvent ? "Event Date" : "Check-In"}
-                    </label>
-                    <input type="date" value={dates.start} required min={new Date().toISOString().split("T")[0]} onChange={(e) => setDates({ ...dates, start: e.target.value })} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '4px' }}>
-                      {isEvent ? "End Date" : "Check-Out"}
-                    </label>
-                    <input type="date" value={dates.end} required min={dates.start || new Date().toISOString().split("T")[0]} onChange={(e) => setDates({ ...dates, end: e.target.value })} />
-                  </div>
+                  <input type="date" value={dates.start} required min={new Date().toISOString().split("T")[0]} onChange={(e) => setDates({ ...dates, start: e.target.value })} />
+                  <input type="date" value={dates.end} required min={dates.start} onChange={(e) => setDates({ ...dates, end: e.target.value })} />
                 </div>
-                {!isEvent && numNights > 0 && (
-                  <p style={{ fontSize: '0.8rem', color: '#888', margin: '5px 0' }}>{numNights} night{numNights > 1 ? 's' : ''}</p>
-                )}
-                <button type="submit" className="btn-book" style={{ width: '100%', marginTop: '10px' }} disabled={isSubmitting}>
-                  {isSubmitting ? "Processing..." : `Confirm — GH₵ ${(isEvent ? booking.price : booking.price * numNights).toLocaleString()}`}
+                <button type="submit" className="btn-book" style={{width: '100%'}} disabled={isSubmitting}>
+                  {isSubmitting ? "Processing..." : `Confirm GH₵ ${(booking.id < 4 ? booking.price * numNights : booking.price).toLocaleString()}`}
                 </button>
               </form>
             ) : (
@@ -258,13 +239,5 @@ export default function App() {
         </div>
       )}
     </div>
-  );
-
-  return (
-    <Routes>
-      <Route path="/" element={<GuestPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/admin" element={<AdminDashboard />} />
-    </Routes>
   );
 }
