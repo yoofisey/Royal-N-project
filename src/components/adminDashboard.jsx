@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || "https://royal-n-api-1.onrender.com";
 const roomsDataKeys = ['standard', 'deluxe', 'executive', 'hall', 'grounds'];
 const ADMIN_AUTH_HEADER = { 'x-admin-password': 'admin123' };
 
-export default function AdminDashboard({ setView }) {
-  const [adminBookings, setAdminBookings] = useState([]);
+export default function AdminDashboard() {  // remove setView prop
+  const navigate = useNavigate();
+    const [adminBookings, setAdminBookings] = useState([]);
   const [availability, setAvailability] = useState({});
   const [togglingKey, setTogglingKey] = useState(null);
 
@@ -103,9 +105,9 @@ export default function AdminDashboard({ setView }) {
     <div className="admin-container" style={{ padding: '20px', background: '#fff', minHeight: '100vh' }}>
       <nav style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #eee', paddingBottom: '10px', marginBottom: '20px' }}>
         <h2 style={{ fontFamily: 'Playfair Display, serif' }}>ROYAL 'N' PANEL</h2>
-        <button onClick={() => setView('guest')} style={{ background: '#333', color: '#fff', padding: '8px 15px', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
-          Logout
-        </button>
+        <button onClick={() => navigate('/')} style={{ background: '#333', color: '#fff', padding: '8px 15px', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
+  Logout
+</button>
       </nav>
 
       {/* Stats */}
