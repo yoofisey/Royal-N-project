@@ -16,108 +16,39 @@ const eventsData = [
   { id: 5, key: "grounds", name: "The Grand Grounds", price: 4500, package: "Our premier outdoor space. Perfect for Weddings or Proposals.", img: "/grounds.jpg" },
 ];
 
-export default function App() {
-  const [booking, setBooking] = useState(null);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const [guestName, setGuestName] = useState("");
-  const [guestEmail, setGuestEmail] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
-  const [loginError, setLoginError] = useState(false);
-  const [availability, setAvailability] = useState({ standard: true, deluxe: true, executive: true, hall: true, grounds: true });
-  const [dates, setDates] = useState({ start: "", end: "" });
-  const [numNights, setNumNights] = useState(1);
+// ── Pulled outside App so they never re-mount on re-render ──────────────────
 
+function LoginPage({ adminPassword, setAdminPassword, loginError, setLoginError }) {
   const navigate = useNavigate();
+  return (
+    <div className="login-wrapper">
+      <form className="login-card" onSubmit={(e) => {
+        e.preventDefault();
+        if (adminPassword === "admin123") { navigate("/admin"); setLoginError(false); }
+        else setLoginError(true);
+      }}>
+        <img src="/logo2.jpeg" alt="Logo" />
+        <h3>Staff Portal</h3>
+        <input
+          type="password"
+          placeholder="Password"
+          value={adminPassword}
+          onChange={(e) => { setAdminPassword(e.target.value); setLoginError(false); }}
+          className={loginError ? "error-input" : ""}
+        />
+        {loginError && <p style={{ color: '#ff4d4d', fontSize: '0.85rem', marginTop: '-10px' }}>Incorrect password</p>}
+        <button type="submit" className="btn-book">Login</button>
+        <p className="link-text" onClick={() => navigate("/")}>Return Home</p>
+      </form>
+    </div>
+  );
+}
 
-  useEffect(() => {
-    const fetchAvail = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/availability/`);
-        if (res.ok) {
-          const data = await res.json();
-          setAvailability(data);
-        }
-      } catch (err) { console.error("Availability fetch error:", err); }
-    };
-    fetchAvail();
-    const interval = setInterval(fetchAvail, 5000);
-    return () => clearInterval(interval);
-  }, []);
+function GuestPage({ availability, booking, setBooking, isSuccess, isSubmitting, guestName, setGuestName, guestEmail, setGuestEmail, dates, setDates, numNights, handleBookingSubmit }) {
+  const navigate = useNavigate();
+  const isEvent = booking && booking.id >= 4;
 
-  useEffect(() => {
-    if (dates.start && dates.end) {
-      const s = new Date(dates.start);
-      const e = new Date(dates.end);
-      const diff = Math.ceil((e - s) / (1000 * 60 * 60 * 24));
-      setNumNights(diff > 0 ? diff : 1);
-    }
-  }, [dates]);
-
-  const handleBookingSubmit = async (e) => {
-    e.preventDefault();
-    if (!booking || isSubmitting) return;
-    setIsSubmitting(true);
-    const isEvent = booking.id >= 4;
-    const finalPrice = isEvent ? booking.price : booking.price * numNights;
-
-    const payload = {
-      guest_name: guestName,
-      email: guestEmail,
-      room_type: booking.name,
-      price: Number(finalPrice),
-      start_date: dates.start,
-      end_date: dates.end,
-    };
-
-    try {
-      const response = await fetch(`${API_URL}/api/bookings/book/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (response.ok) {
-        setIsSuccess(true);
-        setGuestName("");
-        setGuestEmail("");
-        setTimeout(() => {
-          setBooking(null);
-          setIsSuccess(false);
-          setDates({ start: "", end: "" });
-        }, 3000);
-      } else {
-        const errorData = await response.json();
-        alert(`Error: ${errorData.error || "Please try again."}`);
-      }
-    } catch (err) {
-      alert("Server connection lost. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (view === "admin") return <AdminDashboard setView={setView} />;
-
-  if (view === "login") {
-    return (
-      <div className="login-wrapper">
-        <form className="login-card" onSubmit={(e) => {
-          e.preventDefault();
-          if (adminPassword === "admin123") setView("admin");
-          else setLoginError(true);
-        }}>
-          <img src="/logo2.jpeg" alt="Logo" />
-          <h3>Staff Portal</h3>
-          <input type="password" placeholder="Password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} className={loginError ? "error-input" : ""} />
-          <button type="submit" className="btn-book">Login</button>
-          <p className="link-text" onClick={() => setView("guest")}>Return Home</p>
-        </form>
-      </div>
-    );
-  }
-
-  const GuestPage = () => (
+  return (
     <div className="main-wrapper">
       <nav className="navbar">
         <div className="container nav-flex">
@@ -128,7 +59,7 @@ export default function App() {
           <ul className="nav-links">
             <li><a href="#rooms">Rooms</a></li>
             <li><a href="#events">Events</a></li>
-            <li><a onClick={() => setView("login")} style={{cursor: 'pointer'}}>Staff</a></li>
+            <li><a onClick={() => navigate("/login")} style={{ cursor: 'pointer' }}>Staff</a></li>
           </ul>
         </div>
       </nav>
@@ -197,7 +128,7 @@ export default function App() {
             <ul style={{ listStyle: 'none', marginTop: '10px' }}>
               <li><a href="#rooms">Our Rooms</a></li>
               <li><a href="#events">Event Spaces</a></li>
-              <li onClick={() => setView("login")} style={{cursor: 'pointer', color: '#ccc'}}>Staff Portal</li>
+              <li onClick={() => navigate("/login")} style={{ cursor: 'pointer', color: '#ccc' }}>Staff Portal</li>
             </ul>
           </div>
           <div>
@@ -217,15 +148,30 @@ export default function App() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             {!isSuccess ? (
               <form className="booking-form" onSubmit={handleBookingSubmit}>
-                <h3 style={{fontFamily: 'Playfair Display', marginBottom: '15px'}}>Reserve {booking.name}</h3>
+                <h3 style={{ fontFamily: 'Playfair Display', marginBottom: '15px' }}>
+                  {isEvent ? "Enquire: " : "Reserve: "}{booking.name}
+                </h3>
                 <input placeholder="Full Name" value={guestName} onChange={(e) => setGuestName(e.target.value)} required />
                 <input type="email" placeholder="Email Address" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} required />
                 <div className="date-row">
-                  <input type="date" value={dates.start} required min={new Date().toISOString().split("T")[0]} onChange={(e) => setDates({ ...dates, start: e.target.value })} />
-                  <input type="date" value={dates.end} required min={dates.start} onChange={(e) => setDates({ ...dates, end: e.target.value })} />
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '4px' }}>
+                      {isEvent ? "Event Date" : "Check-In"}
+                    </label>
+                    <input type="date" value={dates.start} required min={new Date().toISOString().split("T")[0]} onChange={(e) => setDates({ ...dates, start: e.target.value })} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '4px' }}>
+                      {isEvent ? "End Date" : "Check-Out"}
+                    </label>
+                    <input type="date" value={dates.end} required min={dates.start || new Date().toISOString().split("T")[0]} onChange={(e) => setDates({ ...dates, end: e.target.value })} />
+                  </div>
                 </div>
-                <button type="submit" className="btn-book" style={{width: '100%'}} disabled={isSubmitting}>
-                  {isSubmitting ? "Processing..." : `Confirm GH₵ ${(booking.id < 4 ? booking.price * numNights : booking.price).toLocaleString()}`}
+                {!isEvent && numNights > 0 && (
+                  <p style={{ fontSize: '0.8rem', color: '#888', margin: '5px 0' }}>{numNights} night{numNights > 1 ? 's' : ''}</p>
+                )}
+                <button type="submit" className="btn-book" style={{ width: '100%', marginTop: '10px' }} disabled={isSubmitting}>
+                  {isSubmitting ? "Processing..." : `Confirm — GH₵ ${(isEvent ? booking.price : booking.price * numNights).toLocaleString()}`}
                 </button>
               </form>
             ) : (
@@ -239,5 +185,102 @@ export default function App() {
         </div>
       )}
     </div>
+  );
+}
+
+// ── Main App — only handles state and routing ───────────────────────────────
+
+export default function App() {
+  const [booking, setBooking] = useState(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [loginError, setLoginError] = useState(false);
+  const [availability, setAvailability] = useState({ standard: true, deluxe: true, executive: true, hall: true, grounds: true });
+  const [dates, setDates] = useState({ start: "", end: "" });
+  const [numNights, setNumNights] = useState(1);
+
+  useEffect(() => {
+    const fetchAvail = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/availability/`);
+        if (res.ok) {
+          const data = await res.json();
+          setAvailability(data);
+        }
+      } catch (err) { console.error("Availability fetch error:", err); }
+    };
+    fetchAvail();
+    const interval = setInterval(fetchAvail, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (dates.start && dates.end) {
+      const s = new Date(dates.start);
+      const e = new Date(dates.end);
+      const diff = Math.ceil((e - s) / (1000 * 60 * 60 * 24));
+      setNumNights(diff > 0 ? diff : 1);
+    }
+  }, [dates]);
+
+  const handleBookingSubmit = async (e) => {
+    e.preventDefault();
+    if (!booking || isSubmitting) return;
+    setIsSubmitting(true);
+    const isEvent = booking.id >= 4;
+    const finalPrice = isEvent ? booking.price : booking.price * numNights;
+
+    const payload = {
+      guest_name: guestName,
+      email: guestEmail,
+      room_type: booking.name,
+      price: Number(finalPrice),
+      start_date: dates.start,
+      end_date: dates.end,
+    };
+
+    try {
+      const response = await fetch(`${API_URL}/api/bookings/book/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (response.ok) {
+        setIsSuccess(true);
+        setGuestName("");
+        setGuestEmail("");
+        setTimeout(() => {
+          setBooking(null);
+          setIsSuccess(false);
+          setDates({ start: "", end: "" });
+        }, 3000);
+      } else {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.error || "Please try again."}`);
+      }
+    } catch (err) {
+      alert("Server connection lost. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const guestProps = {
+    availability, booking, setBooking, isSuccess, isSubmitting,
+    guestName, setGuestName, guestEmail, setGuestEmail,
+    dates, setDates, numNights, handleBookingSubmit
+  };
+
+  const loginProps = { adminPassword, setAdminPassword, loginError, setLoginError };
+
+  return (
+    <Routes>
+      <Route path="/" element={<GuestPage {...guestProps} />} />
+      <Route path="/login" element={<LoginPage {...loginProps} />} />
+      <Route path="/admin" element={<AdminDashboard />} />
+    </Routes>
   );
 }
