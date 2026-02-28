@@ -10,7 +10,7 @@ const { data, error } = await supabase
   .insert([{
     guest_name,
     email,
-    phone,      // ✅ make sure this line is there
+    phone,     
     room_type,
     price,
     start_date,
@@ -25,12 +25,11 @@ const { data, error } = await supabase
             return res.status(400).json({ success: false, error: error.message });
         }
 
-        // Send confirmation email (won't break booking if it fails)
-        try {
-            await sendBookingEmail(email, guest_name, { room_type, price });
-        } catch (emailErr) {
-            console.error("Email failed to send, but booking was saved:", emailErr);
-        }
+       // Fire email in background — don't await it
+sendBookingEmail(email, guest_name, { room_type, price, start_date, end_date })
+  .catch(err => console.error("Background email error:", err));
+
+return res.status(201).json({ success: true, data: data[0] });
 
         return res.status(201).json({ success: true, data: data[0] });
     } catch (error) {
