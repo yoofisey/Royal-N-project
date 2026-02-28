@@ -25,10 +25,21 @@ function LoginPage({ adminPassword, setAdminPassword, loginError, setLoginError 
   const navigate = useNavigate();
   return (
     <div className="login-wrapper">
-      <form className="login-card" onSubmit={(e) => {
+      <form className="login-card" onSubmit={async (e) => {
         e.preventDefault();
-        if (adminPassword === "admin123") { navigate("/admin"); setLoginError(false); }
-        else setLoginError(true);
+        const res = await fetch(`${API_URL}/api/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: adminPassword })
+        });
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem('adminToken', adminPassword);
+          setLoginError(false);
+          navigate('/admin');
+        } else {
+          setLoginError(true);
+        }
       }}>
         <img src="/logo2.jpeg" alt="Logo" />
         <h3>Staff Portal</h3>
@@ -46,7 +57,6 @@ function LoginPage({ adminPassword, setAdminPassword, loginError, setLoginError 
     </div>
   );
 }
-
 // ── Added guestPhone + setGuestPhone to props ────────────────────────────────
 function GuestPage({ availability, booking, setBooking, isSuccess, isSubmitting, guestName, setGuestName, guestEmail, setGuestEmail, guestPhone, setGuestPhone, dates, setDates, numNights, handleBookingSubmit }) {
   const navigate = useNavigate();
