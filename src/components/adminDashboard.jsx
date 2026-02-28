@@ -190,6 +190,7 @@ export default function AdminDashboard() {
                     <strong style={{ fontSize: '1rem', color: '#333' }}>{b.guest_name}</strong><br />
                     <small style={{ color: '#c19d68', fontWeight: 'bold' }}>{b.room_type?.toUpperCase()}</small><br />
                     <small style={{ color: '#999' }}>{b.email}</small>
+                    <small style={{ color: '#999' }}>📞 {b.phone || 'N/A'}</small>
                   </td>
                   <td style={{ padding: '15px', color: '#555' }}>
                     <div style={{ fontWeight: 'bold' }}>{new Date(b.start_date).toLocaleDateString('en-GB')}</div>

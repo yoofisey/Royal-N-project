@@ -16,8 +16,6 @@ const eventsData = [
   { id: 5, key: "grounds", name: "The Grand Grounds", price: 4500, package: "Our premier outdoor space. Perfect for Weddings or Proposals.", img: "/grounds.jpg" },
 ];
 
-// ── Pulled outside App so they never re-mount on re-render ──────────────────
-
 function LoginPage({ adminPassword, setAdminPassword, loginError, setLoginError }) {
   const navigate = useNavigate();
   return (
@@ -44,7 +42,8 @@ function LoginPage({ adminPassword, setAdminPassword, loginError, setLoginError 
   );
 }
 
-function GuestPage({ availability, booking, setBooking, isSuccess, isSubmitting, guestName, setGuestName, guestEmail, setGuestEmail, dates, setDates, numNights, handleBookingSubmit }) {
+// ── Added guestPhone + setGuestPhone to props ────────────────────────────────
+function GuestPage({ availability, booking, setBooking, isSuccess, isSubmitting, guestName, setGuestName, guestEmail, setGuestEmail, guestPhone, setGuestPhone, dates, setDates, numNights, handleBookingSubmit }) {
   const navigate = useNavigate();
   const isEvent = booking && booking.id >= 4;
 
@@ -153,8 +152,7 @@ function GuestPage({ availability, booking, setBooking, isSuccess, isSubmitting,
                 </h3>
                 <input placeholder="Full Name" value={guestName} onChange={(e) => setGuestName(e.target.value)} required />
                 <input type="email" placeholder="Email Address" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} required />
-                                <input type="tel" placeholder="Phone Number" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} required />
-
+                <input type="tel" placeholder="Phone Number" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} required />
                 <div className="date-row">
                   <div style={{ flex: 1 }}>
                     <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '4px' }}>
@@ -190,15 +188,13 @@ function GuestPage({ availability, booking, setBooking, isSuccess, isSubmitting,
   );
 }
 
-// ── Main App — only handles state and routing ───────────────────────────────
-
 export default function App() {
   const [booking, setBooking] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
-  const [guestPhone, setGuestPhone] = useState("");
+  const [guestPhone, setGuestPhone] = useState(""); // ✅ declared here
   const [adminPassword, setAdminPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
   const [availability, setAvailability] = useState({ standard: true, deluxe: true, executive: true, hall: true, grounds: true });
@@ -256,6 +252,7 @@ export default function App() {
         setIsSuccess(true);
         setGuestName("");
         setGuestEmail("");
+        setGuestPhone(""); // ✅ reset phone after booking
         setTimeout(() => {
           setBooking(null);
           setIsSuccess(false);
@@ -272,9 +269,11 @@ export default function App() {
     }
   };
 
+  // ✅ guestPhone and setGuestPhone now passed down to GuestPage
   const guestProps = {
     availability, booking, setBooking, isSuccess, isSubmitting,
     guestName, setGuestName, guestEmail, setGuestEmail,
+    guestPhone, setGuestPhone,
     dates, setDates, numNights, handleBookingSubmit
   };
 
