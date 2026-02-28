@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import "./index.css";
 import AdminDashboard from "./components/adminDashboard";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "https://royal-n-api-1.onrender.com";
+function ProtectedRoute() {
+  const token = localStorage.getItem('adminToken');
+  return token ? <AdminDashboard /> : <Navigate to="/login" />;
+}
+
 
 const roomsData = [
   { id: 1, key: "standard", name: "The Essential Stay", price: 450, package: "Perfect for the solo traveler. Includes High-Speed Fiber WiFi and Gourmet Breakfast.", img: "/standard.jpg" },
@@ -283,7 +288,6 @@ export default function App() {
     <Routes>
       <Route path="/" element={<GuestPage {...guestProps} />} />
       <Route path="/login" element={<LoginPage {...loginProps} />} />
-      <Route path="/admin" element={<AdminDashboard />} />
-    </Routes>
+<Route path="/admin" element={<ProtectedRoute />} />    </Routes>
   );
 }
