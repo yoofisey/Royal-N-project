@@ -153,6 +153,8 @@ function GuestPage({ availability, booking, setBooking, isSuccess, isSubmitting,
                 </h3>
                 <input placeholder="Full Name" value={guestName} onChange={(e) => setGuestName(e.target.value)} required />
                 <input type="email" placeholder="Email Address" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} required />
+                                <input type="tel" placeholder="Phone Number" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} required />
+
                 <div className="date-row">
                   <div style={{ flex: 1 }}>
                     <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '4px' }}>
@@ -196,6 +198,7 @@ export default function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
   const [availability, setAvailability] = useState({ standard: true, deluxe: true, executive: true, hall: true, grounds: true });
@@ -236,6 +239,7 @@ export default function App() {
     const payload = {
       guest_name: guestName,
       email: guestEmail,
+      phone: guestPhone,
       room_type: booking.name,
       price: Number(finalPrice),
       start_date: dates.start,
