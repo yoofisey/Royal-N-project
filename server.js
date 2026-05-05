@@ -8,8 +8,12 @@ import availabilityRoutes from './routes/availabilityRoutes.js';
 
 const app = express();
 
-app.use(cors());
-app.options('*', cors());
+app.use(cors({
+  origin: ["https://royalnhotel.net"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
+
 
 app.use(express.json());
 
